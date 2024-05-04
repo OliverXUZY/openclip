@@ -65,7 +65,7 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         attn_mask: Optional[torch.Tensor] = None,
         drop_block_mask: Optional[torch.Tensor] = None,
         drop_head_mask: Optional[torch.Tensor] = None,
-        count_macs = False,
+        count_macs: Optional[bool] = False,
     ):
         """
         Args:
@@ -82,10 +82,13 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         else:
             assert k_x is None and v_x is None, "Only implement for self attn."
             if count_macs:
+                all_false = (drop_block_mask == False).all()
+                if all_false:
+                    # if all false in count masks, skip all operations to avoid empty tensor into attn function
+                    return q_x
                 res1 = self.ls_1(self.attention(q_x=self.ln_1(q_x[:,drop_block_mask,:]), k_x=k_x, v_x=v_x, attn_mask=attn_mask))
                 q_x[:,drop_block_mask,:] = q_x[:,drop_block_mask,:] + res1
                 x = q_x
-
                 res2 = self.ls_2(self.mlp(self.ln_2(x[:,drop_block_mask,:])))
                 x[:,drop_block_mask,:] = x[:,drop_block_mask,:] + res2
             else:
@@ -134,11 +137,11 @@ class ada_Transformer(Transformer):
             for _ in range(layers)
         ])
     
-    def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None, drop_head_masks = None):
+    def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None, drop_block_masks = None, count_macs:Optional[bool] = False):
         """
         Args:
             x (torch.float16, [num_patchs (n_tokens), bs, dim]): input features.
-            drop_head_masks (bool tensor, (bs, n)): masks for residual connections.
+            drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
         """
         # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         for block_idx, r in enumerate(self.resblocks):
@@ -149,11 +152,13 @@ class ada_Transformer(Transformer):
                 # print("r: ", x.shape)
                 # assert False
                 assert isinstance(r, ada_ResidualAttentionBlock), "this vit should use customized Block"
-                if block_idx == 0 or drop_head_masks is None:
-                    drop_head_mask = None
+                if drop_block_masks is None:
+                    drop_block_mask = None
                 else:
-                    drop_head_mask = drop_head_masks[:, (block_idx-1)]
-                x = r(x, attn_mask=attn_mask, drop_head_mask = drop_head_mask)
+                    drop_block_mask = drop_block_masks[:, block_idx]
+                    # print(drop_block_mask.shape, drop_block_mask)
+                    # assert False
+                x = r(x, attn_mask=attn_mask, drop_block_mask = drop_block_mask, count_macs = count_macs)
         # assert False
         return x
 
@@ -212,12 +217,32 @@ class ada_VisionTransformer(VisionTransformer):
             act_layer=act_layer,
             norm_layer=norm_layer,
         )
+
+        ### save out macs
+        self.macs = [
+            0.02619428620948564,
+            0.08115047614920953,
+            0.08115047614920953,
+            0.08115047614920953,
+            0.0811504761492095,
+            0.08115047614920956,
+            0.08115047614920956,
+            0.08115047614920945,
+            0.08115047614920956,
+            0.08115047614920956,
+            0.08115047614920956,
+            0.08115047614920945,
+            0.08115047614920956
+        ]
     
-    def forward(self, x: torch.Tensor, drop_head_masks=None):
+    def get_macs(self):
+        return torch.tensor(self.macs).to(torch.float32)
+    
+    def forward(self, x: torch.Tensor, drop_block_masks=None, count_macs:Optional[bool] = False):
         """
         Args:
             x (torch.float16, [bs, c, h, w]): input features. [64, 3, 224, 224]
-            drop_head_masks (bool tensor, (bs, n)): masks for residual connections.
+            drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
         """
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
@@ -233,7 +258,7 @@ class ada_VisionTransformer(VisionTransformer):
 
         x = x.permute(1, 0, 2)  # NLD -> LND
         # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
-        x = self.transformer(x, drop_head_masks)
+        x = self.transformer(x, drop_block_masks = drop_block_masks, count_macs = count_macs)
         # print("after vit's tranasformer: ", x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         x = x.permute(1, 0, 2)  # LND -> NLD
 

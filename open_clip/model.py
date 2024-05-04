@@ -20,6 +20,7 @@ from .modified_resnet import ModifiedResNet
 from .timm_model import TimmModel
 from .transformer import LayerNormFp32, LayerNorm, QuickGELU, Attention, VisionTransformer, TextTransformer,\
     text_global_pool
+from .ada_vision_transformer import ada_VisionTransformer
 from .utils import to_2tuple
 
 
@@ -109,6 +110,9 @@ def _build_vision_tower(
 ):
     if isinstance(vision_cfg, dict):
         vision_cfg = CLIPVisionCfg(**vision_cfg)
+    
+    # print(vision_cfg)
+    # assert False
 
     # OpenAI models are pretrained w/ QuickGELU but native nn.GELU is both faster and more
     # memory efficient in recent PyTorch releases (>= 1.10).
@@ -116,6 +120,7 @@ def _build_vision_tower(
     act_layer = QuickGELU if quick_gelu else nn.GELU
 
     if vision_cfg.timm_model_name:
+        print("vision timm")
         visual = TimmModel(
             vision_cfg.timm_model_name,
             pretrained=vision_cfg.timm_model_pretrained,
@@ -144,8 +149,29 @@ def _build_vision_tower(
             norm_layer = partial(norm_layer, **vision_cfg.norm_kwargs)
         if vision_cfg.act_kwargs is not None:
             act_layer = partial(act_layer, **vision_cfg.act_kwargs)
-
-        visual = VisionTransformer(
+        print("vit scratch")
+        # visual = VisionTransformer(
+        #     image_size=vision_cfg.image_size,
+        #     patch_size=vision_cfg.patch_size,
+        #     width=vision_cfg.width,
+        #     layers=vision_cfg.layers,
+        #     heads=vision_heads,
+        #     mlp_ratio=vision_cfg.mlp_ratio,
+        #     ls_init_value=vision_cfg.ls_init_value,
+        #     patch_dropout=vision_cfg.patch_dropout,
+        #     attentional_pool=vision_cfg.attentional_pool,
+        #     attn_pooler_queries=vision_cfg.attn_pooler_queries,
+        #     attn_pooler_heads=vision_cfg.attn_pooler_heads,
+        #     pos_embed_type=vision_cfg.pos_embed_type,
+        #     no_ln_pre=vision_cfg.no_ln_pre,
+        #     final_ln_after_pool=vision_cfg.final_ln_after_pool,
+        #     pool_type=vision_cfg.pool_type,
+        #     output_tokens=vision_cfg.output_tokens,
+        #     output_dim=embed_dim,
+        #     act_layer=act_layer,
+        #     norm_layer=norm_layer,
+        # )
+        visual = ada_VisionTransformer(
             image_size=vision_cfg.image_size,
             patch_size=vision_cfg.patch_size,
             width=vision_cfg.width,
@@ -166,7 +192,9 @@ def _build_vision_tower(
             act_layer=act_layer,
             norm_layer=norm_layer,
         )
-
+    
+    print("visual: ", visual)
+    # assert False, "create vision transformer"
     return visual
 
 
@@ -262,8 +290,15 @@ class CLIP(nn.Module):
         self.visual.set_grad_checkpointing(enable)
         self.transformer.grad_checkpointing = enable
 
-    def encode_image(self, image, normalize: bool = False):
-        features = self.visual(image)
+    def encode_image(self, image, normalize: bool = False, drop_block_masks: Optional[torch.Tensor] = None):
+        """
+        Args:
+            image (torch.float32, [bs, c, h, w]): input features. [64, 3, 224, 224]
+            drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
+        """
+        # print("image: ",image.dtype, image.shape)
+        # assert False
+        features = self.visual(image, drop_block_masks)    # [bs, dim]   [4, 512]
         return F.normalize(features, dim=-1) if normalize else features
 
     def encode_text(self, text, normalize: bool = False):
@@ -298,8 +333,17 @@ class CLIP(nn.Module):
             self,
             image: Optional[torch.Tensor] = None,
             text: Optional[torch.Tensor] = None,
-    ):
-        image_features = self.encode_image(image, normalize=True) if image is not None else None
+            drop_block_masks: Optional[torch.Tensor] = None
+    ):  
+        """
+        Args:
+            image (torch.float32, [bs, c, h, w]): input features. [64, 3, 224, 224]
+            drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
+        """
+        # print("image: ",image.dtype, image.shape)
+        # print("text: ",text.dtype, text.shape)
+        # assert False
+        image_features = self.encode_image(image, normalize=True, drop_block_masks = drop_block_masks) if image is not None else None
         text_features = self.encode_text(text, normalize=True) if text is not None else None
 
         if self.output_dict:

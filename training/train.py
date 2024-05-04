@@ -16,7 +16,7 @@ except ImportError:
 
 from open_clip import get_input_dtype, CLIP, CustomTextCLIP
 from .distributed import is_master
-from .zero_shot import zero_shot_eval
+from .zero_shot import zero_shot_eval, zero_shot_eval_macs
 from .precision import get_autocast
 
 
@@ -248,19 +248,23 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
     # end for
 
 
-def evaluate(model, data, epoch, args, tb_writer=None, tokenizer=None):
+def evaluate(model, data, epoch, args, tb_writer=None, tokenizer=None, return_macs = True, drop_block_masks = None):
     metrics = {}
     if not is_master(args):
         return metrics
     device = torch.device(args.device)
     model.eval()
-
-    zero_shot_metrics = zero_shot_eval(model, data, epoch, args, tokenizer=tokenizer)
+    if return_macs:
+        zero_shot_metrics = zero_shot_eval_macs(model, data, epoch, args, tokenizer=tokenizer, drop_block_masks = drop_block_masks)
+    else:
+        zero_shot_metrics = zero_shot_eval(model, data, epoch, args, tokenizer=tokenizer)
     metrics.update(zero_shot_metrics)
 
     autocast = get_autocast(args.precision)
     input_dtype = get_input_dtype(args.precision)
 
+
+    print("'val' in data and (args.val_frequency and ((epoch %\ args.val_frequency) == 0 or epoch == args.epochs)): ", 'val' in data and (args.val_frequency and ((epoch % args.val_frequency) == 0 or epoch == args.epochs)))
     if 'val' in data and (args.val_frequency and ((epoch % args.val_frequency) == 0 or epoch == args.epochs)):
         dataloader = data['val'].dataloader
         num_samples = 0
