@@ -208,6 +208,7 @@ def create_model(
         )
     else:
         model_cfg = model_cfg or get_model_config(model_name)
+        # print("model_cfg: ", model_cfg)
         if model_cfg is not None:
             logging.info(f'Loaded {model_name} model config.')
         else:
@@ -244,11 +245,19 @@ def create_model(
 
         model_cfg = dict(model_cfg, **model_kwargs)  # merge cfg dict w/ kwargs (kwargs overrides cfg)
         if custom_text:
+            logging.info("zhuoyan: custom_text")
             if "multimodal_cfg" in model_cfg:
                 model = CoCa(**model_cfg, cast_dtype=cast_dtype)
             else:
                 model = CustomTextCLIP(**model_cfg, cast_dtype=cast_dtype)
         else:
+            # print("model_cfg: ", model_cfg)
+            # for key, val in model_cfg.items():
+            #     print(key)
+            #     print(type(val))
+            # print("cast_dtype: ", cast_dtype)
+            # assert False
+            logging.info("zhuoyan: CLIP")
             model = CLIP(**model_cfg, cast_dtype=cast_dtype)
 
         if precision in ("fp16", "bf16"):
@@ -279,6 +288,8 @@ def create_model(
         if pretrained:
             checkpoint_path = ''
             pretrained_cfg = get_pretrained_cfg(model_name, pretrained)
+            # print("pretrained_cfg: ", pretrained_cfg)
+            # assert False
             if pretrained_cfg:
                 checkpoint_path = download_pretrained(pretrained_cfg, cache_dir=cache_dir)
                 preprocess_cfg = merge_preprocess_dict(preprocess_cfg, pretrained_cfg)
@@ -398,7 +409,9 @@ def create_model_and_transforms(
         output_dict=output_dict,
         **model_kwargs,
     )
-
+    
+    # print("create model: ", model)
+    # assert False
     pp_cfg = PreprocessCfg(**model.visual.preprocess_cfg)
 
     preprocess_train = image_transform_v2(

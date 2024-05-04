@@ -70,6 +70,8 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
+    # print(args)
+    # assert False
 
     if torch.cuda.is_available():
         # This enables tf32 on Ampere GPUs which is only 8% slower than
@@ -220,6 +222,27 @@ def main(args):
     if args.siglip:
         model_kwargs['init_logit_scale'] = np.log(10)  # different from CLIP
         model_kwargs['init_logit_bias'] = -10
+    
+    # Print each argument
+    print("model:", args.model)
+    print("pretrained:", args.pretrained)
+    print("precision:", args.precision)
+    print("device:", device)
+    print("jit:", args.torchscript)
+    print("force_quick_gelu:", args.force_quick_gelu)
+    print("force_custom_text:", args.force_custom_text)
+    print("force_patch_dropout:", args.force_patch_dropout)
+    print("force_image_size:", args.force_image_size)
+    print("image_mean:", args.image_mean)
+    print("image_std:", args.image_std)
+    print("image_interpolation:", args.image_interpolation)
+    print("image_resize_mode:", args.image_resize_mode)
+    print("aug_cfg:", args.aug_cfg)
+    print("pretrained_image:", args.pretrained_image)
+    print("output_dict:", True)
+    print("model_kwargs:", model_kwargs)
+    # assert False
+
     model, preprocess_train, preprocess_val = create_model_and_transforms(
         args.model,
         args.pretrained,
@@ -418,15 +441,19 @@ def main(args):
         logging.info('Compiling model...')
         model = torch.compile(original_model)
 
+    # assert False, "stop before evaluation"
     if 'train' not in data:
+        print("train not in")
         # If using int8, convert to inference mode.
         if args.use_bnb_linear is not None:
+            print("convet")
             from open_clip.utils import convert_int8_model_to_inference_mode
             convert_int8_model_to_inference_mode(model)
         # Evaluate.
         evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer)
         return
 
+    assert False
     loss = create_loss(args)
 
     for epoch in range(start_epoch, args.epochs):

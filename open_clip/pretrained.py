@@ -142,6 +142,7 @@ _VITB32 = dict(
     commonpool_s_s13m_b4k=_pcfg(hf_hub='laion/CLIP-ViT-B-32-CommonPool.S-s13M-b4K/'),
 )
 
+## zhuoyan pretrained ckpt
 _VITB32_quickgelu = dict(
     openai=_pcfg(
         "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt"),
@@ -482,6 +483,10 @@ def get_pretrained_cfg(model: str, tag: str):
     if model not in _PRETRAINED:
         return {}
     model_pretrained = _PRETRAINED[model]
+    # print("model_pretrained: ", model_pretrained)
+    print("pretrained tag is: ", tag)
+    # print(_clean_tag(tag))
+    # assert False
     return model_pretrained.get(_clean_tag(tag), {})
 
 
@@ -498,6 +503,7 @@ def download_pretrained_from_url(
         cache_dir = os.path.expanduser("~/.cache/clip")
     os.makedirs(cache_dir, exist_ok=True)
     filename = os.path.basename(url)
+    print("cache_dir: ", cache_dir)
 
     if 'openaipublic' in url:
         expected_sha256 = url.split("/")[-2]

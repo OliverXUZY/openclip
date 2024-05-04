@@ -51,20 +51,26 @@ def build_zero_shot_classifier(
 
     def _process_batch(batch_classnames):
         num_batch_classes = len(batch_classnames)
+        # print("class names in this batch: ", batch_classnames)
         texts = [template.format(c) if use_format else template(c) for c in batch_classnames for template in templates]
+        # print(texts)
         texts = tokenizer(texts).to(device)
         class_embeddings = model.encode_text(texts, normalize=True)
         class_embeddings = class_embeddings.reshape(num_batch_classes, num_templates, -1).mean(dim=1)
         class_embeddings = class_embeddings / class_embeddings.norm(dim=1, keepdim=True)
         class_embeddings = class_embeddings.T
+        # print(class_embeddings.shape)
         return class_embeddings
 
     with torch.no_grad():
         if num_classes_per_batch:
             batched_embeds = [_process_batch(batch) for batch in iter_wrap(batched(classnames, num_classes_per_batch))]
-            zeroshot_weights = torch.cat(batched_embeds, dim=1)
+            zeroshot_weights = torch.cat(batched_embeds, dim=1) # [embd_dim, num_class] [512, 1000]
         else:
             zeroshot_weights = _process_batch(classnames)
+        
+        # print(zeroshot_weights.shape)
+        # assert False
     return zeroshot_weights
 
 

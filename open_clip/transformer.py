@@ -196,6 +196,16 @@ class ResidualAttentionBlock(nn.Module):
             norm_layer: Callable = LayerNorm,
             is_cross_attention: bool = False,
     ):
+        # print(
+        #     d_model,
+        #     n_head,
+        #     mlp_ratio,
+        #     ls_init_value,
+        #     act_layer,
+        #     norm_layer,
+        #     is_cross_attention,
+        # )
+        # assert False
         super().__init__()
 
         self.ln_1 = norm_layer(d_model)
@@ -237,9 +247,16 @@ class ResidualAttentionBlock(nn.Module):
     ):
         k_x = self.ln_1_kv(k_x) if hasattr(self, "ln_1_kv") and k_x is not None else None
         v_x = self.ln_1_kv(v_x) if hasattr(self, "ln_1_kv") and v_x is not None else None
+        # print("q_x: ", q_x.shape)          # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        # print("k_x: ", k_x)
+        # print("v_x: ", v_x)
+        
 
         x = q_x + self.ls_1(self.attention(q_x=self.ln_1(q_x), k_x=k_x, v_x=v_x, attn_mask=attn_mask))
         x = x + self.ls_2(self.mlp(self.ln_2(x)))
+
+        # print("x: ", x.shape)              # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        # assert False
         return x
 
 
@@ -316,12 +333,17 @@ class Transformer(nn.Module):
         return self.resblocks[0].mlp.c_fc.weight.dtype
 
     def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None):
+        # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        # print(x.dtype)
         for r in self.resblocks:
             if self.grad_checkpointing and not torch.jit.is_scripting():
                 # TODO: handle kwargs https://github.com/pytorch/pytorch/issues/79887#issuecomment-1161758372
                 x = checkpoint(r, x, None, None, attn_mask)
             else:
+                # print("r: ", x.shape)
+                # assert False
                 x = r(x, attn_mask=attn_mask)
+        # assert False
         return x
 
 
@@ -391,7 +413,7 @@ class VisionTransformer(nn.Module):
             act_layer=act_layer,
             norm_layer=norm_layer,
         )
-
+        # print("===================== attentional_pool: ==========================", attentional_pool)
         if attentional_pool:
             if isinstance(attentional_pool, str):
                 self.attn_pool_type = attentional_pool
@@ -513,7 +535,9 @@ class VisionTransformer(nn.Module):
         x = self.ln_pre(x)
 
         x = x.permute(1, 0, 2)  # NLD -> LND
+        # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         x = self.transformer(x)
+        # print("after vit's tranasformer: ", x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         x = x.permute(1, 0, 2)  # LND -> NLD
 
         if self.attn_pool is not None:
@@ -544,6 +568,8 @@ class VisionTransformer(nn.Module):
         if self.output_tokens:
             return pooled, tokens
         
+        # print("after vit: ", pooled.shape)                  # [bs, fea_dim] [4, 512]
+        # assert False
         return pooled
 
 
