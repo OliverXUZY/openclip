@@ -37,6 +37,7 @@ from training.scheduler import cosine_lr, const_lr, const_lr_cooldown
 from training.train import train_one_epoch, evaluate
 from training.file_utils import pt_load, check_exists, start_sync_process, remote_sync
 
+from src.utils import set_gpu
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
 
@@ -70,6 +71,7 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
+    set_gpu(args.gpu)
     # print(args)
     # assert False
 
