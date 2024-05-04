@@ -12,6 +12,8 @@ from training.params import parse_args
 
 
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
+from open_clip.model import _build_vision_tower
+
 from training.distributed import is_master, init_distributed_device, broadcast_object
 from training.precision import get_autocast
 
@@ -26,7 +28,13 @@ def main(args):
     if args.siglip:
         model_kwargs['init_logit_scale'] = np.log(10)  # different from CLIP
         model_kwargs['init_logit_bias'] = -10
-
+    
+    images = torch.randn([4, 3, 224, 224])
+    print("args.device", args.device)
+    input_dtype = torch.float32
+    images = images.to(device=args.device, dtype=input_dtype) # torch.float32 [bs, 3, 224, 224]
+    
+    '''
     model, preprocess_train, preprocess_val = create_model_and_transforms(
         args.model,
         args.pretrained,
@@ -47,10 +55,7 @@ def main(args):
         **model_kwargs,
     )
 
-    images = torch.randn([4, 3, 224, 224])
-    print("args.device", args.device)
-    input_dtype = torch.float32
-    images = images.to(device=args.device, dtype=input_dtype) # torch.float32 [bs, 3, 224, 224]
+    
     print("args.precision", args.precision)
     autocast = get_autocast(args.precision)
 
@@ -61,6 +66,31 @@ def main(args):
     image_features = output['image_features'] if isinstance(output, dict) else output[0] # [bs, dim] [64, 512]
     
     print("in debug/model_forward: ", image_features.shape)
+    '''
+
+    ##### vision
+    print("============================  vision =================================================================================")
+    print('Loading model...')
+    model_cfg = {
+        'embed_dim': 512, 
+        'quick_gelu': True, 
+        'vision_cfg': {'image_size': 224, 'layers': 12, 'width': 768, 'patch_size': 32}, 
+        # 'text_cfg': {'context_length': 77, 'vocab_size': 49408, 'width': 512, 'heads': 8, 'layers': 12}
+    }
+
+    visual = _build_vision_tower(**model_cfg, cast_dtype = None)
+    visual.to(device="cuda")
+    drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True, False]).unsqueeze(0).to("cuda")
+    drop_block_masks = drop_block_masks.expand(4, -1)
+    print(drop_block_masks.shape, drop_block_masks)
+
+    output = visual(images, drop_block_masks, count_macs = True)
+    # output = visual(images)
+    print("in debug/visual_forward: ", output.shape)
+
+
+
+
 
 
 if __name__ == "__main__":

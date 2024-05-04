@@ -26,8 +26,8 @@ def random_seed(seed=42, rank=0):
 random_seed()
 
 from open_clip.transformer import ResidualAttentionBlock, QuickGELU, LayerNorm
-
-
+from open_clip.ada_vision_transformer import ada_ResidualAttentionBlock
+'''
 class ada_ResidualAttentionBlock(ResidualAttentionBlock):
     def __init__(
             self,
@@ -91,6 +91,7 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         drop_head_mask: Optional[torch.Tensor] = None,
         count_macs = False,
     ):
+        print("================ count_macs =====================: ", count_macs)
         """
         Args:
             q_x (float tensor, (seq_len, bs, dim)): feature maps.  [50 (7*7+1), 4 (or 64), 768]
@@ -131,6 +132,7 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         # assert False
         return x
 
+'''
 
 
 def main():
@@ -153,9 +155,15 @@ def main():
     
     features = features.to(device="cuda", dtype=input_dtype) # torch.float32 
 
-    mask = torch.tensor([True, False, True, True]).to("cuda")
-    print(mask.dtype)
-    # mask = torch.tensor([True, False, False, False]).to("cuda")
+    # mask = torch.tensor([True, False, True, True]).to("cuda")
+    mask = torch.tensor([False, False, False, False]).to("cuda")
+    # Check if all elements are False
+    # all_false = (mask == False).all()
+    # if all_false:
+    #     print("ifif")
+
+    # print("all_false: ", all_false)  # This will print 'True' if all elements are False
+    print(mask.dtype, mask, mask.shape)
 
 
     # mask_x = features[:,mask,:]
@@ -165,10 +173,10 @@ def main():
     print("features.device: ", features.device)
 
     ### drop block masks
-    # output = block(features, drop_block_mask = mask, count_macs = True)
-    output = block(features, drop_block_mask = mask, count_macs = False)
+    output = block(features, drop_block_mask = mask, count_macs = True)
+    # output = block(features, drop_block_mask = mask, count_macs = False)
 
-    print("in debug/block_forward: ", output.shape)
+    # print("in debug/block_forward: ", output.shape)
 
     print(feature_ori - output)
     
