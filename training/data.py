@@ -115,7 +115,7 @@ def get_dataset_size(shards):
     return total_size, num_shards
 
 
-def get_imagenet(args, preprocess_fns, split):
+def get_imagenet(args, preprocess_fns, split, val_subset = True):
     assert split in ["train", "val", "v2"]
     is_train = split == "train"
     preprocess_train, preprocess_val = preprocess_fns
@@ -146,6 +146,20 @@ def get_imagenet(args, preprocess_fns, split):
             np.random.shuffle(arr)
             idxs[m] = arr
 
+        idxs = idxs.astype('int')
+        sampler = SubsetRandomSampler(np.where(idxs)[0])
+    elif val_subset:
+        ### subset sampler, k = 10, save 1/5 time
+        idxs = np.zeros(len(dataset.targets))
+        target_array = np.array(dataset.targets)
+        k = 10
+        for c in range(1000):
+            m = target_array == c
+            n = len(idxs[m])
+            arr = np.zeros(n)
+            arr[:k] = 1
+            np.random.shuffle(arr)
+            idxs[m] = arr
         idxs = idxs.astype('int')
         sampler = SubsetRandomSampler(np.where(idxs)[0])
     else:
