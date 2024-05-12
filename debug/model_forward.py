@@ -1,5 +1,8 @@
 import sys
 sys.path.insert(0, "/home/user/Documents/projects/openclip/")
+sys.path.insert(0, "/home/zhuoyan/vision/openclip")
+import numpy as np
+import random
 
 from tqdm import tqdm
 
@@ -10,9 +13,16 @@ from training.data import get_data
 from training.params import parse_args
 
 
+def random_seed(seed=42, rank=0):
+    torch.manual_seed(seed + rank)
+    np.random.seed(seed + rank)
+    random.seed(seed + rank)
+
 
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
 from open_clip.model import _build_vision_tower
+from open_clip.ada_scheduler import ada_Scheduler, ada_SchedulerCfg
+
 
 from training.distributed import is_master, init_distributed_device, broadcast_object
 from training.precision import get_autocast
@@ -80,13 +90,29 @@ def main(args):
 
     visual = _build_vision_tower(**model_cfg, cast_dtype = None)
     visual.to(device="cuda")
-    drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True, False]).unsqueeze(0).to("cuda")
-    drop_block_masks = drop_block_masks.expand(4, -1)
-    print(drop_block_masks.shape, drop_block_masks)
 
-    output = visual(images, drop_block_masks, count_macs = True)
-    # output = visual(images)
-    print("in debug/visual_forward: ", output.shape)
+    rng = random_seed(42)
+
+    schdeuler_cfg = ada_SchedulerCfg()
+
+    scheduler = ada_Scheduler(schdeuler_cfg)
+    scheduler.to(device="cuda")
+    
+    testing_sche = True
+    if testing_sche == False:
+        drop_block_masks = torch.tensor(
+            [True, False, True, True, True, False, True, True, True, False, True]
+        ).unsqueeze(0).to("cuda")
+        drop_block_masks = drop_block_masks.expand(4, -1)
+        print("drop_block_masks: ", drop_block_masks.shape, drop_block_masks)
+
+        output = visual(images, drop_block_masks = drop_block_masks, count_macs = True)
+        # output = visual(images)
+        print("in debug/visual_forward: ", output.shape, output[0, :20])
+    else:
+        dummy_latency = torch.tensor([0.5, 0.3, 0.8, 0.6]).to("cuda")
+        output = visual(images, latency = dummy_latency, ada_scheduler_forward = scheduler.forward)
+
 
 
 

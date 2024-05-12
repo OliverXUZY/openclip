@@ -2,6 +2,7 @@
 from typing import Callable, Optional, Sequence, Tuple
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint
 from .transformer import VisionTransformer, Transformer, ResidualAttentionBlock, QuickGELU, LayerNorm, _expand_token
 
 class ada_ResidualAttentionBlock(ResidualAttentionBlock):
@@ -75,6 +76,10 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         """
         k_x = self.ln_1_kv(k_x) if hasattr(self, "ln_1_kv") and k_x is not None else None
         v_x = self.ln_1_kv(v_x) if hasattr(self, "ln_1_kv") and v_x is not None else None
+
+        if drop_block_mask is not None:
+            print("drop_block_mask.device: ", drop_block_mask.device)
+            print("drop_block_mask: ", drop_block_mask)
         
         if drop_block_mask is None:
             x = q_x + self.ls_1(self.attention(q_x=self.ln_1(q_x), k_x=k_x, v_x=v_x, attn_mask=attn_mask))
@@ -95,6 +100,7 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
                 # Check if drop_block_mask is of boolean type
                 if drop_block_mask.dtype == torch.bool:
                     # Convert to torch.float32
+                    print("convert bool to float, might affect gradient flow in training")
                     drop_block_mask = drop_block_mask.to(torch.float32)
 
                 mask_reshaped = drop_block_mask.view(1, q_x.shape[1], 1)  # Reshape to (1, bs, 1) for broadcasting
@@ -137,13 +143,40 @@ class ada_Transformer(Transformer):
             for _ in range(layers)
         ])
     
-    def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None, drop_block_masks = None, count_macs:Optional[bool] = False):
+    def _gumbel_sigmoid(self, logits, tau=1, hard=False, eps=1e-10):
+        # Sample Gumbel noise
+        gumbels1 = -torch.empty_like(logits).exponential_().log()  # Sample from Gumbel(0, 1)
+        gumbels2 = -torch.empty_like(logits).exponential_().log()  # Sample from Gumbel(0, 1)
+        # print(gumbels.shape)
+        # assert False
+        # Add Gumbel noise to logits
+        noisy_logits = (logits + gumbels1 - gumbels2) / tau  # Apply temperature
+        # Apply sigmoid to get probabilities in (0, 1)
+        y_soft = torch.sigmoid(noisy_logits)
+        
+        if hard:
+            # Hard thresholding to 0 or 1, but in a way that gradients can flow through y_soft
+            y_hard = (y_soft > 0.5).float()
+            # Use straight-through estimator to make the operation differentiable
+            y = y_hard - y_soft.detach() + y_soft
+        else:
+            y = y_soft
+        
+        return y
+    
+    def forward_blockmask(
+            self, x: torch.Tensor, 
+            attn_mask: Optional[torch.Tensor] = None, 
+            drop_block_masks = None, 
+            count_macs:Optional[bool] = False,
+        ):
         """
         Args:
             x (torch.float16, [num_patchs (n_tokens), bs, dim]): input features.
             drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
         """
         # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        mask_idx = 0
         for block_idx, r in enumerate(self.resblocks):
             if self.grad_checkpointing and not torch.jit.is_scripting():
                 # TODO: handle kwargs https://github.com/pytorch/pytorch/issues/79887#issuecomment-1161758372
@@ -152,14 +185,86 @@ class ada_Transformer(Transformer):
                 # print("r: ", x.shape)
                 # assert False
                 assert isinstance(r, ada_ResidualAttentionBlock), "this vit should use customized Block"
-                if drop_block_masks is None:
+                if drop_block_masks is None or block_idx == 0:
+                    ## always enable first block for now
                     drop_block_mask = None
                 else:
-                    drop_block_mask = drop_block_masks[:, block_idx]
+                    drop_block_mask = drop_block_masks[:, mask_idx]
+                    mask_idx += 1
                     # print(drop_block_mask.shape, drop_block_mask)
                     # assert False
                 x = r(x, attn_mask=attn_mask, drop_block_mask = drop_block_mask, count_macs = count_macs)
         # assert False
+        return x
+
+    def forward_block_scheduler(
+            self, x: torch.Tensor, 
+            attn_mask: Optional[torch.Tensor] = None, 
+            latency: Optional[torch.Tensor] = None,
+            ada_scheduler_forward: Callable = None,
+        ):
+        """
+        Args:
+            x (torch.float16, [num_patchs (n_tokens), bs, dim]): input features.
+            latency: (torch.float32, (bs, )).
+            ada_scheduler_forward: Callable
+        """
+        # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        assert latency is not None, "must provide latency"
+        mask_idx = 0
+        for block_idx, r in enumerate(self.resblocks):
+            if self.grad_checkpointing and not torch.jit.is_scripting():
+                # TODO: handle kwargs https://github.com/pytorch/pytorch/issues/79887#issuecomment-1161758372
+                x = checkpoint(r, x, None, None, attn_mask)
+            else:
+                # print("r: ", x.shape)
+                # assert False
+                assert isinstance(r, ada_ResidualAttentionBlock), "this vit should use customized Block"
+                if block_idx == 0:
+                    ## always enable first block for now
+                    drop_block_mask = None
+                    ada_sche_x = x.clone().permute(1, 0, 2)  # LND -> NLD
+                    ada_pooled = ada_sche_x[:, 0]
+                    # print(ada_sche_x.shape)
+                    # print(ada_pooled.shape)
+                    # assert False
+                    logits = ada_scheduler_forward(ada_pooled, latency)
+                    drop_block_masks = self._gumbel_sigmoid(logits, hard = True)
+                    # print("generate drop_block_masks: ", drop_block_masks.shape)
+                    # print(drop_block_masks)
+                else:
+                    drop_block_mask = drop_block_masks[:, mask_idx]
+                    mask_idx += 1
+                    
+                x = r(x, attn_mask=attn_mask, drop_block_mask = drop_block_mask, count_macs = False)
+        # assert False
+        return x
+
+    def forward(
+            self, x: torch.Tensor, 
+            attn_mask: Optional[torch.Tensor] = None, 
+            drop_block_masks = None, 
+            count_macs:Optional[bool] = False,
+            latency: Optional[torch.Tensor] = None,
+            ada_scheduler_forward: Callable = None,
+        ):
+        """
+        Args:
+            x (torch.float16, [num_patchs (n_tokens), bs, dim]): input features.
+            drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
+            latency: (torch.float32, (bs, )).
+            ada_scheduler_forward: Callable
+        """
+        if latency is not None:
+            assert drop_block_masks is None, "provide block mask and latency both!"
+            x = self.forward_block_scheduler(
+                x=x, attn_mask=attn_mask, latency = latency, ada_scheduler_forward = ada_scheduler_forward
+            )
+        else:
+            assert drop_block_masks is not None, "must provide block mask if no latency requirement!"
+            x = self.forward_blockmask(
+                x=x, attn_mask=attn_mask, drop_block_masks = drop_block_masks, count_macs = count_macs
+            )
         return x
 
 
@@ -238,11 +343,20 @@ class ada_VisionTransformer(VisionTransformer):
     def get_macs(self):
         return torch.tensor(self.macs).to(torch.float32)
     
-    def forward(self, x: torch.Tensor, drop_block_masks=None, count_macs:Optional[bool] = False):
+    def forward(
+            self, 
+            x: torch.Tensor, 
+            drop_block_masks=None, 
+            count_macs:Optional[bool] = False,
+            latency: Optional[torch.Tensor] = None,
+            ada_scheduler_forward: Callable = None,
+        ):
         """
         Args:
             x (torch.float16, [bs, c, h, w]): input features. [64, 3, 224, 224]
             drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
+            latency: (torch.float32, (bs, )).
+            ada_scheduler_forward: Callable
         """
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
@@ -258,9 +372,18 @@ class ada_VisionTransformer(VisionTransformer):
 
         x = x.permute(1, 0, 2)  # NLD -> LND
         # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
-        x = self.transformer(x, drop_block_masks = drop_block_masks, count_macs = count_macs)
+        x = self.transformer(
+            x, 
+            drop_block_masks = drop_block_masks, 
+            count_macs = count_macs,
+            latency = latency,
+            ada_scheduler_forward = ada_scheduler_forward,
+        )
         # print("after vit's tranasformer: ", x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         x = x.permute(1, 0, 2)  # LND -> NLD
+        # print("self.attn_pool: ", self.attn_pool)
+        # print("self.final_ln_after_pool: ", self.final_ln_after_pool)
+        # assert False
 
         if self.attn_pool is not None:
             if self.attn_pool_contrastive is not None:
