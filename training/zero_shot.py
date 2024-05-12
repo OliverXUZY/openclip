@@ -153,7 +153,8 @@ def zero_shot_eval_macs(model, data, epoch, args, tokenizer=None, drop_block_mas
     model_macs = model.visual.get_macs().to("cuda")
     # print("==== drop_block_masks====: ", drop_block_masks.shape, drop_block_masks)
     # print("model_macs: ", model_macs)
-    returned_macs = (drop_block_masks * model_macs[1:]).sum(dim=-1) + model_macs[0]
+    ## always keep the first block
+    returned_macs = (drop_block_masks * model_macs[2:]).sum(dim=-1) + model_macs[0] + model_macs[1]
     # print("===========", returned_macs.item())
     # assert False
     if 'imagenet-val' in data:
