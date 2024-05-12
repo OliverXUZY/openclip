@@ -480,10 +480,11 @@ def main(args):
     print("start evaluate")
     timer = Timer()
 
-    drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True, False]).to("cuda")
+    # drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True, False]).to("cuda")
+    drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True]).to("cuda")
 
     # Number of elements in each tensor
-    n_elements = 12
+    n_elements = 12 - 1   # hardcode for now
 
     # Total combinations for n_elements boolean values (2^12)
     total_combinations = 2 ** n_elements
@@ -493,7 +494,7 @@ def main(args):
 
     # Populate the tensor with combinations
     for i in range(total_combinations):
-        all_tensors[i] = torch.tensor([int(x) for x in f"{i:012b}"], dtype=torch.bool)
+        all_tensors[i] = torch.tensor([int(x) for x in f"{i:011b}"], dtype=torch.bool)
 
     # Move the tensor to the CUDA device
     all_tensors = all_tensors.cuda()
@@ -512,7 +513,7 @@ def main(args):
     for count, idx in enumerate(indices):
         drop_block_masks = all_tensors[idx]
 
-        # drop_block_masks = torch.tensor([True, True, True, True, True, True, True, True, True, True, True, True]).to("cuda")
+        # drop_block_masks = torch.tensor([True, True, True, True, True, True, True, True, True, True, True]).to("cuda")
         # print(drop_block_masks)
         # Run the evaluation function
         result = evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer, drop_block_masks=drop_block_masks)
