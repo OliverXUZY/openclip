@@ -6,7 +6,7 @@ import copy
 import logging
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, Callable
 
 import numpy as np
 import torch
@@ -150,28 +150,8 @@ def _build_vision_tower(
         if vision_cfg.act_kwargs is not None:
             act_layer = partial(act_layer, **vision_cfg.act_kwargs)
         print("vit scratch")
-        # visual = VisionTransformer(
-        #     image_size=vision_cfg.image_size,
-        #     patch_size=vision_cfg.patch_size,
-        #     width=vision_cfg.width,
-        #     layers=vision_cfg.layers,
-        #     heads=vision_heads,
-        #     mlp_ratio=vision_cfg.mlp_ratio,
-        #     ls_init_value=vision_cfg.ls_init_value,
-        #     patch_dropout=vision_cfg.patch_dropout,
-        #     attentional_pool=vision_cfg.attentional_pool,
-        #     attn_pooler_queries=vision_cfg.attn_pooler_queries,
-        #     attn_pooler_heads=vision_cfg.attn_pooler_heads,
-        #     pos_embed_type=vision_cfg.pos_embed_type,
-        #     no_ln_pre=vision_cfg.no_ln_pre,
-        #     final_ln_after_pool=vision_cfg.final_ln_after_pool,
-        #     pool_type=vision_cfg.pool_type,
-        #     output_tokens=vision_cfg.output_tokens,
-        #     output_dim=embed_dim,
-        #     act_layer=act_layer,
-        #     norm_layer=norm_layer,
-        # )
         visual = ada_VisionTransformer(
+        # visual = VisionTransformer(
             image_size=vision_cfg.image_size,
             patch_size=vision_cfg.patch_size,
             width=vision_cfg.width,
@@ -192,7 +172,7 @@ def _build_vision_tower(
             act_layer=act_layer,
             norm_layer=norm_layer,
         )
-    
+
     print("visual: ", visual)
     # assert False, "create vision transformer"
     return visual
@@ -290,7 +270,13 @@ class CLIP(nn.Module):
         self.visual.set_grad_checkpointing(enable)
         self.transformer.grad_checkpointing = enable
 
-    def encode_image(self, image, normalize: bool = False, drop_block_masks: Optional[torch.Tensor] = None):
+    def encode_image(self, 
+            image, 
+            normalize: bool = False, 
+            drop_block_masks: Optional[torch.Tensor] = None,
+            latency: Optional[torch.Tensor] = None,
+            ada_scheduler_forward: Callable = None,             
+        ):
         """
         Args:
             image (torch.float32, [bs, c, h, w]): input features. [64, 3, 224, 224]
@@ -298,8 +284,13 @@ class CLIP(nn.Module):
         """
         # print("image: ",image.dtype, image.shape)
         # assert False
-        features = self.visual(image, drop_block_masks)    # [bs, dim]   [4, 512]
-        return F.normalize(features, dim=-1) if normalize else features
+        features, returned_macs = self.visual(
+            image, 
+            drop_block_masks,
+            latency = latency,
+            ada_scheduler_forward = ada_scheduler_forward,              
+        )    # [bs, dim]   [4, 512]
+        return F.normalize(features, dim=-1) if normalize else features, returned_macs
 
     def encode_text(self, text, normalize: bool = False):
         cast_dtype = self.transformer.get_cast_dtype()
@@ -333,24 +324,29 @@ class CLIP(nn.Module):
             self,
             image: Optional[torch.Tensor] = None,
             text: Optional[torch.Tensor] = None,
-            drop_block_masks: Optional[torch.Tensor] = None
+            drop_block_masks: Optional[torch.Tensor] = None,
+            latency: Optional[torch.Tensor] = None,
+            ada_scheduler_forward: Callable = None,
     ):  
         """
         Args:
             image (torch.float32, [bs, c, h, w]): input features. [64, 3, 224, 224]
             drop_block_masks (bool tensor, (bs, n)): masks for residual connections.
+            latency: (torch.float32, (bs, )).
+            ada_scheduler_forward: Callable
         """
         # print("image: ",image.dtype, image.shape)
         # print("text: ",text.dtype, text.shape)
         # assert False
-        image_features = self.encode_image(image, normalize=True, drop_block_masks = drop_block_masks) if image is not None else None
+        image_features, returned_macs = self.encode_image(image, normalize=True, drop_block_masks = drop_block_masks, latency = latency, ada_scheduler_forward = ada_scheduler_forward) if image is not None else None
         text_features = self.encode_text(text, normalize=True) if text is not None else None
 
         if self.output_dict:
             out_dict = {
                 "image_features": image_features,
                 "text_features": text_features,
-                "logit_scale": self.logit_scale.exp()
+                "logit_scale": self.logit_scale.exp(),
+                "returned_macs": returned_macs,  # tensor, [bs, ]
             }
             if self.logit_bias is not None:
                 out_dict['logit_bias'] = self.logit_bias
@@ -358,7 +354,7 @@ class CLIP(nn.Module):
 
         if self.logit_bias is not None:
             return image_features, text_features, self.logit_scale.exp(), self.logit_bias
-        return image_features, text_features, self.logit_scale.exp()
+        return image_features, text_features, self.logit_scale.exp(), returned_macs
 
 
 class CustomTextCLIP(nn.Module):

@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, "/home/user/Documents/projects/openclip/")
-
+sys.path.insert(0, "/home/zhuoyan/vision/openclip")
 from tqdm import tqdm
 
 from training.data import get_data
@@ -53,10 +53,12 @@ def main(args):
     )
     assert len(data), 'At least one train or eval dataset must be specified.'
     print("data: ", data.keys())
+
+    print("=========================== val =================================")
     image_val = data['imagenet-val']
     val_loader = image_val.dataloader
     val_set = val_loader.dataset
-    print("len dataset: ", len(val_set))
+    print("len val dataset: ", len(val_set))
 
     eg = val_set[0]
     print(len(eg), type(eg))
@@ -66,8 +68,23 @@ def main(args):
     print(len(eg), type(eg))
     print(eg[0].shape, eg[1])
 
-    for images, target in tqdm(val_loader, unit_scale=args.batch_size):
-        print(target)
+    # for images, target in tqdm(val_loader, unit_scale=args.batch_size):
+    #     print(target)
+
+    print("=========================== train =================================")
+    image_train = data['imagenet-train']
+    train_loader = image_train.dataloader
+    train_set = train_loader.dataset
+    print("len train dataset: ", len(train_set))
+
+    eg = train_set[0]
+    print(len(eg), type(eg))
+    print(eg[0].shape, eg[1])
+
+    eg = next(iter(train_loader))
+    print(len(eg), type(eg))
+    print(eg[0].shape, eg[1])
+
 
 
 if __name__ == "__main__":

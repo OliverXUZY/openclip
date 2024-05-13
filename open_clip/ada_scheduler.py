@@ -101,12 +101,12 @@ class ada_Scheduler(nn.Module):
             x (torch.float16, [bs, dim]): input features. [4(64), 768]
             latency (float tensor, (bs,)): latency for each input.
         """
-        print(x.device, x.shape)
-        print(latency.device, latency.shape)
+        # print(x.device, x.shape)
+        # print(latency.device, latency.shape)
         x = self.content_encoder(x)
         latency = self.latency_encoder(latency.view(-1, 1))
-        print("x.shape: ", x.shape)
-        print("latency.shape: ", latency.shape)
+        # print("x.shape: ", x.shape)
+        # print("latency.shape: ", latency.shape)
         # assert False
 
         embeddings = self.construct_embeddings(x, latency)
@@ -116,6 +116,6 @@ class ada_Scheduler(nn.Module):
         hidden = self.combined_fc(embeddings)
         # print("hidden.shape: ", hidden.shape)
         logits = self.out(hidden)
-        print("logits.shape: ", logits.shape)
+        # print("logits.shape: ", logits.shape)
 
         return logits

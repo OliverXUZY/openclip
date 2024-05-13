@@ -412,3 +412,63 @@ class SigLipLoss(nn.Module):
                     text_features_to_right = text_features_from_left
 
         return {"contrastive_loss": loss} if output_dict else loss
+
+### added by zhuoyan
+def ce_loss_fn(
+            logits,         # (bs, C): unnormalized logits
+            target,         # (bs, C): binary targets
+        ):
+        """
+        The loss for recognition model on image classification
+        """
+        assert logits.size(0) == target.size(0)
+        # print(logits.dtype)
+        # print(target.dtype)
+        # target = target.float()
+
+        loss = F.cross_entropy(logits, target)
+        return loss
+
+def macs_loss(
+        macs,   # (bs): actual macs
+        latency,         # (bs): required latency
+        beta = 1,
+        alpha = 0.2   # proportion of negative diff
+    ):
+    """
+    The loss for latency
+    """
+    assert macs.size() == latency.size()
+    
+    diff = macs - latency
+    positive_loss = beta * F.relu(diff).sum()
+    # For negative diffs, apply a factor of 0.2 to the absolute values
+    negative_loss = alpha * torch.relu(-diff).sum()
+    # The total loss is the sum of the positive and adjusted negative losses
+    loss = positive_loss + negative_loss
+    # loss = torch.nn.functional.mse_loss(macs, latency, reduction='sum')
+    return loss
+
+def compose_loss(
+        loss1, # scalar
+        loss2, # scalar
+        p = 0.5,
+        eps = 1e-8,
+    ):
+    # ret_loss = p*loss1/(loss1.detach() + eps) + (1-p)*loss2/(loss2.detach() + eps)
+    ret_loss = p*loss1 + (1-p)*loss2
+
+    return ret_loss
+
+
+class AdaLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.ce_loss_p = 0.2
+
+    def forward(self, logits, target, macs, latency):
+        ce_loss = ce_loss_fn(logits, target)
+        latency_loss = macs_loss(macs, latency)
+        ada_loss = compose_loss(ce_loss, latency_loss, p = self.ce_loss_p)
+        return {"ce_loss": ce_loss, "latency_loss": latency_loss, "ada_loss": ada_loss}
+    

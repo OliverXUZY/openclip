@@ -77,9 +77,9 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
         k_x = self.ln_1_kv(k_x) if hasattr(self, "ln_1_kv") and k_x is not None else None
         v_x = self.ln_1_kv(v_x) if hasattr(self, "ln_1_kv") and v_x is not None else None
 
-        if drop_block_mask is not None:
-            print("drop_block_mask.device: ", drop_block_mask.device)
-            print("drop_block_mask: ", drop_block_mask)
+        # if drop_block_mask is not None:
+        #     print("drop_block_mask.device: ", drop_block_mask.device)
+        #     print("drop_block_mask: ", drop_block_mask)
         
         if drop_block_mask is None:
             x = q_x + self.ls_1(self.attention(q_x=self.ln_1(q_x), k_x=k_x, v_x=v_x, attn_mask=attn_mask))
@@ -195,7 +195,7 @@ class ada_Transformer(Transformer):
                     # assert False
                 x = r(x, attn_mask=attn_mask, drop_block_mask = drop_block_mask, count_macs = count_macs)
         # assert False
-        return x
+        return x, drop_block_masks
 
     def forward_block_scheduler(
             self, x: torch.Tensor, 
@@ -238,7 +238,7 @@ class ada_Transformer(Transformer):
                     
                 x = r(x, attn_mask=attn_mask, drop_block_mask = drop_block_mask, count_macs = False)
         # assert False
-        return x
+        return x, drop_block_masks
 
     def forward(
             self, x: torch.Tensor, 
@@ -257,15 +257,15 @@ class ada_Transformer(Transformer):
         """
         if latency is not None:
             assert drop_block_masks is None, "provide block mask and latency both!"
-            x = self.forward_block_scheduler(
+            x, drop_block_masks = self.forward_block_scheduler(
                 x=x, attn_mask=attn_mask, latency = latency, ada_scheduler_forward = ada_scheduler_forward
             )
         else:
-            assert drop_block_masks is not None, "must provide block mask if no latency requirement!"
-            x = self.forward_blockmask(
+            # assert drop_block_masks is not None, "must provide block mask if no latency requirement!"
+            x, drop_block_masks = self.forward_blockmask(
                 x=x, attn_mask=attn_mask, drop_block_masks = drop_block_masks, count_macs = count_macs
             )
-        return x
+        return x, drop_block_masks
 
 
 
@@ -358,7 +358,12 @@ class ada_VisionTransformer(VisionTransformer):
             latency: (torch.float32, (bs, )).
             ada_scheduler_forward: Callable
         """
+        print("Input to conv:", x.shape, x.dtype)
+        print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
         x = self.conv1(x)  # shape = [*, width, grid, grid]
+        print("Input to conv:", x.shape, x.dtype)
+        print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
+
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
 
@@ -371,8 +376,8 @@ class ada_VisionTransformer(VisionTransformer):
         x = self.ln_pre(x)
 
         x = x.permute(1, 0, 2)  # NLD -> LND
-        # print(x.shape)                  # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
-        x = self.transformer(
+        print("x.shape: ", x.shape, x.dtype)              # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        x, drop_block_masks = self.transformer(
             x, 
             drop_block_masks = drop_block_masks, 
             count_macs = count_macs,
@@ -415,4 +420,15 @@ class ada_VisionTransformer(VisionTransformer):
         
         # print("after vit: ", pooled.shape)                  # [bs, fea_dim] [4, 512]
         # assert False
-        return pooled
+
+        ### compute macs:
+        model_macs = self.get_macs().to("cuda")
+        # print("==== drop_block_masks====: ", drop_block_masks.shape, drop_block_masks)
+        # print("model_macs: ", model_macs)
+        ## always keep the first block
+        if drop_block_masks is not None:
+            returned_macs = (drop_block_masks * model_macs[2:]).sum(dim=-1) + model_macs[0] + model_macs[1]
+        else: 
+            returned_macs = None
+
+        return pooled, returned_macs
