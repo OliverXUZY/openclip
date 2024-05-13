@@ -40,7 +40,7 @@ from training.file_utils import pt_load, check_exists, start_sync_process, remot
 from open_clip import get_input_dtype, get_tokenizer, build_zero_shot_classifier, \
     IMAGENET_CLASSNAMES, OPENAI_IMAGENET_TEMPLATES
 from training.precision import get_autocast
-from training.ada_train_vit import train_one_epoch_vit
+from training.ada_train_vit import train_one_epoch_vit, eval_vit
 from open_clip.ada_scheduler import ada_Scheduler, ada_SchedulerCfg
 from open_clip.loss import AdaLoss
 
@@ -301,13 +301,6 @@ def main(args):
     ada_scheduler = ada_Scheduler(ada_schdeuler_cfg)
     ada_scheduler.to("cuda")
     # print(scheduler)
-
-    ### load fted ckpt
-    if args.ada_finetuned:
-        print(f"load from path {args.ada_finetuned}")
-
-
-
     
     #------------------------------------------
     ### optionally resume from a checkpoint
@@ -315,13 +308,16 @@ def main(args):
     if args.resume is not None:
         print(f"load from path {args.resume}")
         checkpoint = pt_load(args.resume, map_location='cpu')
+        print("checkpoint", type(checkpoint), checkpoint.keys())
         if 'epoch' in checkpoint:
             # resuming a train checkpoint w/ epoch and optimizer state
             start_epoch = checkpoint["epoch"]
             sd = checkpoint["state_dict"]
+            scheduler_sd = checkpoint['ada_scheduler']
             if not args.distributed and next(iter(sd.items()))[0].startswith('module'):
                 sd = {k[len('module.'):]: v for k, v in sd.items()}
             model.load_state_dict(sd)
+            ada_scheduler.load_state_dict(scheduler_sd)
             logging.info(f"=> resuming checkpoint '{args.resume}' (epoch {start_epoch})")
         else:
             print("zhuoyan, loading a bare model")
@@ -329,8 +325,6 @@ def main(args):
             model.load_state_dict(checkpoint)
             logging.info(f"=> loaded checkpoint '{args.resume}' (epoch {start_epoch})")
     
-    assert False
-
     #------------------------------------------
     ### initialize datasets
     tokenizer = get_tokenizer(args.model)
@@ -407,17 +401,6 @@ def main(args):
         convert_int8_model_to_inference_mode(model)
     
     ##################################### above copied from main
-    
-    
-
-    print("start training vit in 0-shot manner")
-
-    
-    timer = Timer()
-
-    loss = AdaLoss()
-
-    epoch = 0
 
     ### build text classifier
     autocast = get_autocast(args.precision)
@@ -442,102 +425,25 @@ def main(args):
         print(f"Save the new classifier tensor to the file in {file_path}")
         torch.save(classifier, file_path)
 
-    # train_one_epoch_vit(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, ada_scheduler = ada_scheduler, text_classifier = classifier)
 
+    print("start evaluate vit in 0-shot manner")
 
-
-
-    ### saving, copied from main.py
-    for epoch in range(start_epoch, args.epochs):
-        if is_master(args):
-            logging.info(f'Start epoch {epoch}')
-
-        train_one_epoch_vit(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, ada_scheduler = ada_scheduler, text_classifier = classifier)
-        completed_epoch = epoch + 1
-
-        ##
-        # if any(v in data for v in ('val', 'imagenet-val', 'imagenet-v2')):
-        #     evaluate(model, data, completed_epoch, args, tb_writer=writer, tokenizer=tokenizer)
-
-        # Saving checkpoints.
-        if args.save_logs and (epoch+1) % 5 == 0:
-            checkpoint_dict = {
-                "epoch": completed_epoch,
-                "name": args.name,
-                "state_dict": original_model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "ada_scheduler": ada_scheduler.state_dict()
-            }
-            if scaler is not None:
-                checkpoint_dict["scaler"] = scaler.state_dict()
-
-            if completed_epoch == args.epochs or (
-                args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
-            ):
-                torch.save(
-                    checkpoint_dict,
-                    os.path.join(args.checkpoint_path, f"epoch_{completed_epoch}.pt"),
-                )
-            if args.delete_previous_checkpoint:
-                previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
-                if os.path.exists(previous_checkpoint):
-                    os.remove(previous_checkpoint)
-
-            if args.save_most_recent:
-                # try not to corrupt the latest checkpoint if save fails
-                tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
-                latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
-                torch.save(checkpoint_dict, tmp_save_path)
-                os.replace(tmp_save_path, latest_save_path)
-
-    if args.wandb and is_master(args):
-        wandb.finish()
     
-    if args.save_logs:
-        checkpoint_dict = {
-            "epoch": completed_epoch,
-            "name": args.name,
-            "state_dict": original_model.state_dict(),
-            "optimizer": optimizer.state_dict(),
-            "ada_scheduler": ada_scheduler.state_dict()
-        }
-        if scaler is not None:
-            checkpoint_dict["scaler"] = scaler.state_dict()
+    timer = Timer()
 
-        if completed_epoch == args.epochs or (
-            args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
-        ):
-            torch.save(
-                checkpoint_dict,
-                os.path.join(args.checkpoint_path, f"epoch_last.pt"),
-            )
-        if args.delete_previous_checkpoint:
-            previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
-            if os.path.exists(previous_checkpoint):
-                os.remove(previous_checkpoint)
+    results = eval_vit(
+        model, 
+        data, 
+        dist_model, 
+        args, 
+        tb_writer=None, 
+        ada_scheduler = ada_scheduler,
+        text_classifier = classifier,
+        num_latency = 3
+    )
 
-        if args.save_most_recent:
-            # try not to corrupt the latest checkpoint if save fails
-            tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
-            latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
-            torch.save(checkpoint_dict, tmp_save_path)
-            os.replace(tmp_save_path, latest_save_path)
-
-    # run a final sync.
-    if remote_sync_process is not None:
-        logging.info('Final remote sync.')
-        remote_sync_process.terminate()
-        result = remote_sync(
-            os.path.join(args.logs, args.name), 
-            os.path.join(args.remote_sync, args.name), 
-            args.remote_sync_protocol
-        )
-        if result:
-            logging.info('Final remote sync successful.')
-        else:
-            logging.info('Final remote sync failed.')
-
-
+    print("results: ", results)
+    
     return
 
 

@@ -195,18 +195,17 @@ def train_one_epoch_vit(
 def eval_vit(
         model, 
         data, 
-        epoch, 
         dist_model, 
         args, 
         tb_writer=None, 
         ada_scheduler = None,
         text_classifier = None,
-        latency = None
+        num_latency = 128,
     ):
     upper = 1.0
     local_rng = torch.Generator()
     local_rng.manual_seed(42)
-    latency, _ = torch.rand(128, generator=local_rng).sort()
+    latency, _ = torch.rand(num_latency, generator=local_rng).sort()
     latency = 0.1073 + (latency * (upper - 0.1073))
     latency = latency.to("cuda")
     timer = Timer()
@@ -219,7 +218,6 @@ def eval_vit(
         top1, top5, total_macs, total_macs_diff = eval_vit_one_latency(
             model, 
             data, 
-            epoch, 
             dist_model, 
             args, 
             tb_writer, 
@@ -254,7 +252,7 @@ def eval_vit(
         # Fetch values from each list by index and format
         row = [metric_list[metric][i] for metric in metric_list]
         log_str += '{:<15.2f}\t{:<15.2f}\t{:<15.2f}\t{:<15.2f}\n'.format(*row)
-    print(metric_list)
+    print("log_str: ", log_str)
 
     results = []
     for top1, top5, mac_diff, laten, macs in zip(top1s, top5s, macs_diff, latency, macss):
@@ -271,7 +269,6 @@ def eval_vit(
 def eval_vit_one_latency(
         model, 
         data, 
-        epoch, 
         dist_model, 
         args, 
         tb_writer=None, 
@@ -296,11 +293,9 @@ def eval_vit_one_latency(
     if args.distill:
         dist_model.eval()
 
-    data['imagenet-train'].set_epoch(epoch)  # set epoch in process safe manner via sampler or shared_epoch
-    dataloader = data['imagenet-train'].dataloader
+    dataloader = data['imagenet-val'].dataloader
     # print("dataloader.num_batches: ", dataloader.num_batches, "args.accum_freq", args.accum_freq)
     # assert False
-    num_batches_per_epoch = dataloader.num_batches // args.accum_freq
     sample_digits = math.ceil(math.log(dataloader.num_samples + 1, 10))
 
 
@@ -311,35 +306,37 @@ def eval_vit_one_latency(
     end = time.time()
     total_macs_diff = 0
     total_macs  = 0
-    for i, batch in enumerate(dataloader):
-        i_accum = i // args.accum_freq
-        step = num_batches_per_epoch * epoch + i_accum
 
-        images, target = batch
-        images = images.to(device=device, dtype=input_dtype, non_blocking=True)
-        target = target.to(args.device) # [bs, ]
+    with torch.no_grad():
+        top1, top5, n = 0., 0., 0.
+        for i, batch in enumerate(dataloader):
+            i_accum = i // args.accum_freq
 
-        data_time_m.update(time.time() - end)
+            images, target = batch
+            images = images.to(device=device, dtype=input_dtype, non_blocking=True)
+            target = target.to(args.device) # [bs, ]
 
-        ### construct latency
-        latency = latency_ori.repeat(target.shape[0]).cuda()
+            data_time_m.update(time.time() - end)
 
-        with autocast():
-            model_out = model(image=images, drop_block_masks=None, latency = latency, ada_scheduler_forward = ada_scheduler.forward)
-            logit_scale = model_out["logit_scale"]
+            ### construct latency
+            latency = latency_ori.repeat(target.shape[0]).cuda()
 
-            image_features = model_out['image_features'] if isinstance(model_out, dict) else model_out[0] # [bs, dim] [64, 512]
-            returned_macs = model_out['returned_macs'] if isinstance(model_out, dict) else model_out[-1] # [bs,] [64]
-            logits = 100. * image_features @ text_classifier
-        
-        # measure accuracy
-        acc1, acc5 = accuracy(logits, target, topk=(1, 5))
-        top1 += acc1
-        top5 += acc5
-        n += images.size(0)
-        diff = returned_macs - latency
-        total_macs_diff += diff[diff > 0].sum().item()
-        total_macs += returned_macs.sum().item()
+            with autocast():
+                model_out = model(image=images, drop_block_masks=None, latency = latency, ada_scheduler_forward = ada_scheduler.forward)
+                logit_scale = model_out["logit_scale"]
+
+                image_features = model_out['image_features'] if isinstance(model_out, dict) else model_out[0] # [bs, dim] [64, 512]
+                returned_macs = model_out['returned_macs'] if isinstance(model_out, dict) else model_out[-1] # [bs,] [64]
+                logits = 100. * image_features @ text_classifier
+            
+            # measure accuracy
+            acc1, acc5 = accuracy(logits, target, topk=(1, 5))
+            top1 += acc1
+            top5 += acc5
+            n += images.size(0)
+            diff = returned_macs - latency
+            total_macs_diff += diff[diff > 0].sum().item()
+            total_macs += returned_macs.sum().item()
 
     top1 = (top1 / n)
     top5 = (top5 / n)

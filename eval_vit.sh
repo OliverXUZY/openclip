@@ -1,6 +1,6 @@
-python main.py \
+python eval_vit.py \
     --imagenet-val data/imagenet/val \
     --model ViT-B-32-quickgelu \
     --pretrained laion400m_e32 \
-    --resume
-    -g 0
+    -g 0 \
+    --resume ./logs/2024_05_13-16_25_29-model_ViT-B-32-quickgelu-lr_0.001-b_64-j_8-p_amp/checkpoints/epoch_1.pt \
