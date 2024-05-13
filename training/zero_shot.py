@@ -43,6 +43,7 @@ def run(model, classifier, dataloader, args, drop_block_masks = None):
                 # predict
                 output = model(image=images, drop_block_masks=drop_block_masks)
                 image_features = output['image_features'] if isinstance(output, dict) else output[0] # [bs, dim] [64, 512]
+                returned_macs = output['returned_macs'] if isinstance(output, dict) else output[-1] # [bs,] [64]
                 logits = 100. * image_features @ classifier
 
             # measure accuracy
@@ -53,7 +54,7 @@ def run(model, classifier, dataloader, args, drop_block_masks = None):
 
     top1 = (top1 / n)
     top5 = (top5 / n)
-    return top1, top5
+    return top1, top5, returned_macs
 
 
 def zero_shot_eval(model, data, epoch, args, tokenizer=None):
@@ -158,10 +159,11 @@ def zero_shot_eval_macs(model, data, epoch, args, tokenizer=None, drop_block_mas
     # print("===========", returned_macs.item())
     # assert False
     if 'imagenet-val' in data:
-        top1, top5 = run(model, classifier, data['imagenet-val'].dataloader, args, drop_block_masks = drop_block_masks)
+        top1, top5, calculated_macs = run(model, classifier, data['imagenet-val'].dataloader, args, drop_block_masks = drop_block_masks)
         results['imagenet-zeroshot-val-top1'] = top1
         results['imagenet-zeroshot-val-top5'] = top5
         results['macs'] = returned_macs.item()
+        results['returned_macs'] = calculated_macs.mean().item()  # in zero-shot, calculated_macs is a vector with bs, all items are the same values
     else:
         assert False, "not implement yet for imagenet-v2"
 

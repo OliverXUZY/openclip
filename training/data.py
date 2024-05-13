@@ -120,11 +120,16 @@ def get_imagenet(args, preprocess_fns, split, val_subset = True):
     is_train = split == "train"
     preprocess_train, preprocess_val = preprocess_fns
 
+    # print("split ========= : ", split)
+    
+
     if split == "v2":
         from imagenetv2_pytorch import ImageNetV2Dataset
         dataset = ImageNetV2Dataset(location=args.imagenet_v2, transform=preprocess_val)
     else:
         if is_train:
+            # print("is_train ========= : ", is_train)
+            # assert False
             data_path = args.imagenet_train
             preprocess_fn = preprocess_train
         else:
@@ -171,6 +176,9 @@ def get_imagenet(args, preprocess_fns, split, val_subset = True):
         num_workers=args.workers,
         sampler=sampler,
     )
+
+    dataloader.num_samples = len(dataset)
+    dataloader.num_batches = len(dataloader)
 
     return DataInfo(dataloader=dataloader, sampler=sampler)
 
@@ -568,6 +576,9 @@ def get_data(args, preprocess_fns, epoch=0, tokenizer=None):
     if args.val_data:
         data["val"] = get_dataset_fn(args.val_data, args.dataset_type)(
             args, preprocess_val, is_train=False, tokenizer=tokenizer)
+    
+    if args.imagenet_train is not None:
+        data["imagenet-train"] = get_imagenet(args, preprocess_fns, "train")
 
     if args.imagenet_val is not None:
         data["imagenet-val"] = get_imagenet(args, preprocess_fns, "val")
