@@ -1,0 +1,642 @@
+[
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0065,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0079,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.004,
+        "imagenet-zeroshot-val-top5": 0.0169,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0019,
+        "imagenet-zeroshot-val-top5": 0.0063,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0078,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0068,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0048,
+        "imagenet-zeroshot-val-top5": 0.0225,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0068,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0085,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0055,
+        "imagenet-zeroshot-val-top5": 0.022,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0023,
+        "imagenet-zeroshot-val-top5": 0.0096,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.007,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0056,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0055,
+        "imagenet-zeroshot-val-top5": 0.0237,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0011,
+        "imagenet-zeroshot-val-top5": 0.0066,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0063,
+        "imagenet-zeroshot-val-top5": 0.0278,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0071,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.005,
+        "imagenet-zeroshot-val-top5": 0.0221,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.008,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0017,
+        "imagenet-zeroshot-val-top5": 0.0085,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0075,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0111,
+        "imagenet-zeroshot-val-top5": 0.0397,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0102,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0068,
+        "imagenet-zeroshot-val-top5": 0.0238,
+        "macs": 0.7565485835075378
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0058,
+        "macs": 0.26964572072029114
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.2885,
+        "imagenet-zeroshot-val-top5": 0.5421,
+        "macs": 0.8376991152763367
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0077,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0019,
+        "imagenet-zeroshot-val-top5": 0.0084,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0057,
+        "imagenet-zeroshot-val-top5": 0.0192,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0093,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0072,
+        "macs": 0.18849524855613708
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0074,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0084,
+        "imagenet-zeroshot-val-top5": 0.0272,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0087,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.4073,
+        "imagenet-zeroshot-val-top5": 0.7008,
+        "macs": 0.8376991152763367
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0122,
+        "imagenet-zeroshot-val-top5": 0.0405,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0011,
+        "imagenet-zeroshot-val-top5": 0.007,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0141,
+        "imagenet-zeroshot-val-top5": 0.0483,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0022,
+        "imagenet-zeroshot-val-top5": 0.0133,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0063,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0082,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0035,
+        "imagenet-zeroshot-val-top5": 0.0117,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.006,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0009,
+        "imagenet-zeroshot-val-top5": 0.0056,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0031,
+        "imagenet-zeroshot-val-top5": 0.0127,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0063,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0008,
+        "imagenet-zeroshot-val-top5": 0.007,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0041,
+        "imagenet-zeroshot-val-top5": 0.0133,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0068,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0011,
+        "imagenet-zeroshot-val-top5": 0.0058,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0061,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0061,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0032,
+        "imagenet-zeroshot-val-top5": 0.0099,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0065,
+        "imagenet-zeroshot-val-top5": 0.0213,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0094,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0011,
+        "imagenet-zeroshot-val-top5": 0.0076,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0031,
+        "imagenet-zeroshot-val-top5": 0.0102,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0079,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0022,
+        "imagenet-zeroshot-val-top5": 0.0106,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.1987,
+        "imagenet-zeroshot-val-top5": 0.4093,
+        "macs": 0.8376991152763367
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0028,
+        "imagenet-zeroshot-val-top5": 0.0122,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0068,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0038,
+        "imagenet-zeroshot-val-top5": 0.0135,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0076,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.1948,
+        "imagenet-zeroshot-val-top5": 0.4178,
+        "macs": 0.8376991152763367
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0059,
+        "macs": 0.26964572072029114
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0055,
+        "macs": 0.26964572072029114
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0068,
+        "imagenet-zeroshot-val-top5": 0.0205,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0066,
+        "macs": 0.26964572072029114
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0057,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0113,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0069,
+        "imagenet-zeroshot-val-top5": 0.0233,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0119,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0056,
+        "macs": 0.18849524855613708
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0084,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0058,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0084,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0058,
+        "imagenet-zeroshot-val-top5": 0.0224,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0037,
+        "imagenet-zeroshot-val-top5": 0.0196,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0064,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0064,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.003,
+        "imagenet-zeroshot-val-top5": 0.0085,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0036,
+        "imagenet-zeroshot-val-top5": 0.0156,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.006,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.005,
+        "imagenet-zeroshot-val-top5": 0.0214,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0073,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0032,
+        "imagenet-zeroshot-val-top5": 0.0135,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0035,
+        "imagenet-zeroshot-val-top5": 0.0142,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0023,
+        "imagenet-zeroshot-val-top5": 0.009,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0066,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0029,
+        "imagenet-zeroshot-val-top5": 0.0119,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0092,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0081,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0062,
+        "imagenet-zeroshot-val-top5": 0.0296,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0064,
+        "imagenet-zeroshot-val-top5": 0.0199,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0067,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0084,
+        "macs": 0.6753981709480286
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0082,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0028,
+        "imagenet-zeroshot-val-top5": 0.0112,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0065,
+        "imagenet-zeroshot-val-top5": 0.0218,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.377,
+        "imagenet-zeroshot-val-top5": 0.6583,
+        "macs": 0.8376991152763367
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0064,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0072,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0064,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0058,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0083,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0087,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0014,
+        "imagenet-zeroshot-val-top5": 0.0067,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0067,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0021,
+        "imagenet-zeroshot-val-top5": 0.0085,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0017,
+        "imagenet-zeroshot-val-top5": 0.0071,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0089,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.002,
+        "imagenet-zeroshot-val-top5": 0.0066,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0018,
+        "imagenet-zeroshot-val-top5": 0.0063,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0012,
+        "imagenet-zeroshot-val-top5": 0.0062,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0027,
+        "imagenet-zeroshot-val-top5": 0.0144,
+        "macs": 0.43194666504859924
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0061,
+        "imagenet-zeroshot-val-top5": 0.0274,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0013,
+        "imagenet-zeroshot-val-top5": 0.0067,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0105,
+        "imagenet-zeroshot-val-top5": 0.0332,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0031,
+        "imagenet-zeroshot-val-top5": 0.0128,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0101,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0016,
+        "imagenet-zeroshot-val-top5": 0.0095,
+        "macs": 0.5942476391792297
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0095,
+        "imagenet-zeroshot-val-top5": 0.0389,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.008,
+        "imagenet-zeroshot-val-top5": 0.0296,
+        "macs": 0.6753981113433838
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0101,
+        "imagenet-zeroshot-val-top5": 0.0356,
+        "macs": 0.5130971670150757
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0015,
+        "imagenet-zeroshot-val-top5": 0.0075,
+        "macs": 0.43194669485092163
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.001,
+        "imagenet-zeroshot-val-top5": 0.0051,
+        "macs": 0.3507961928844452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0028,
+        "imagenet-zeroshot-val-top5": 0.0085,
+        "macs": 0.5942476391792297
+    }
+]
