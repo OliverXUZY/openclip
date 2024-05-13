@@ -358,11 +358,11 @@ class ada_VisionTransformer(VisionTransformer):
             latency: (torch.float32, (bs, )).
             ada_scheduler_forward: Callable
         """
-        print("Input to conv:", x.shape, x.dtype)
-        print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
+        # print("Input to conv:", x.shape, x.dtype)
+        # print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
         x = self.conv1(x)  # shape = [*, width, grid, grid]
-        print("Input to conv:", x.shape, x.dtype)
-        print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
+        # print("Input to conv:", x.shape, x.dtype)
+        # print("Weights:", self.conv1.weight.shape, self.conv1.weight.dtype)
 
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -376,7 +376,7 @@ class ada_VisionTransformer(VisionTransformer):
         x = self.ln_pre(x)
 
         x = x.permute(1, 0, 2)  # NLD -> LND
-        print("x.shape: ", x.shape, x.dtype)              # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
+        # print("x.shape: ", x.shape, x.dtype)              # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
         x, drop_block_masks = self.transformer(
             x, 
             drop_block_masks = drop_block_masks, 

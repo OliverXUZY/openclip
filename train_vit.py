@@ -44,7 +44,7 @@ from training.ada_train_vit import train_one_epoch_vit
 from open_clip.ada_scheduler import ada_Scheduler, ada_SchedulerCfg
 from open_clip.loss import AdaLoss
 
-from src.utils import set_gpu
+from src.utils import set_gpu, Timer, time_str
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
 
@@ -55,25 +55,6 @@ def save_json(data, file_path, indent = 4):
 
 torch.autograd.set_detect_anomaly(True)
 
-class Timer(object):
-
-    def __init__(self):
-
-        self.start()
-
-    def start(self):
-        self.v = time.time()
-
-    def end(self):
-        return time.time() - self.v
-
-
-def time_str(t):
-    if t >= 3600:
-        return '{:.1f}h'.format(t / 3600)
-    if t > 60:
-        return '{:.1f}m'.format(t / 60)
-    return '{:.1f}s'.format(t)
 
 def random_seed(seed=42, rank=0):
     torch.manual_seed(seed + rank)
@@ -557,9 +538,6 @@ def main(args):
 
     # train_one_epoch_vit(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, ada_scheduler = ada_scheduler, text_classifier = classifier)
 
-
-
-
     ### saving, copied from main.py
     for epoch in range(start_epoch, args.epochs):
         if is_master(args):
@@ -602,6 +580,9 @@ def main(args):
                 latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
                 torch.save(checkpoint_dict, tmp_save_path)
                 os.replace(tmp_save_path, latest_save_path)
+                
+        time_elapsed = timer.end()
+        print(f"epoch {epoch+1} | {args.epochs}, time elapsed: {time_str(time_elapsed)} | {time_str(time_elapsed/(epoch+1)*args.epochs)}")
 
     if args.wandb and is_master(args):
         wandb.finish()

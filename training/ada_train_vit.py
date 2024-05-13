@@ -76,7 +76,7 @@ def train_one_epoch_vit(
         # Create a new local generator
         local_rng = torch.Generator()
         local_rng.manual_seed(42)
-        latency, _ = torch.rand(128, generator=local_rng).sort()
+        latency, _ = torch.rand(args.batch_size, generator=local_rng).sort()
         latency = 0.1073 + (latency * (upper - 0.1073))
         latency = latency.to("cuda")
 
@@ -91,11 +91,6 @@ def train_one_epoch_vit(
                 returned_macs = model_out['returned_macs'] if isinstance(model_out, dict) else model_out[-1] # [bs,] [64]
                 logits = 100. * image_features @ text_classifier
 
-                total_loss = returned_macs.sum()
-                backward(total_loss, scaler)
-                assert False
-
-
                 
                 losses = loss(logits, target, macs = returned_macs, latency = latency)
 
@@ -107,7 +102,6 @@ def train_one_epoch_vit(
             
 
             backward(total_loss, scaler)
-            assert False
         else:
             assert False, "Not implement yet"
 
@@ -212,7 +206,7 @@ def eval_vit(
     upper = 1.0
     local_rng = torch.Generator()
     local_rng.manual_seed(42)
-    latency, _ = torch.rand(128, generator=local_rng).sort()
+    latency, _ = torch.rand(args.batch_size, generator=local_rng).sort()
     latency = 0.1073 + (latency * (upper - 0.1073))
     latency = latency.to("cuda")
     timer = Timer()

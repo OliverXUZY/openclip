@@ -4,7 +4,7 @@ python train_vit.py \
     --imagenet-train=data/imagenet/train \
     --imagenet-val=data/imagenet/val \
     --warmup 10000 \
-    --batch-size=128 \
+    --batch-size=64 \
     --lr=1e-3 \
     --wd=0.1 \
     --epochs=30 \
