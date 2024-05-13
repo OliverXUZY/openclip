@@ -76,7 +76,7 @@ def train_one_epoch_vit(
         # Create a new local generator
         local_rng = torch.Generator()
         local_rng.manual_seed(42)
-        latency, _ = torch.rand(args.batch_size, generator=local_rng).sort()
+        latency, _ = torch.rand(target.shape[0], generator=local_rng).sort()
         latency = 0.1073 + (latency * (upper - 0.1073))
         latency = latency.to("cuda")
 
@@ -206,7 +206,7 @@ def eval_vit(
     upper = 1.0
     local_rng = torch.Generator()
     local_rng.manual_seed(42)
-    latency, _ = torch.rand(args.batch_size, generator=local_rng).sort()
+    latency, _ = torch.rand(128, generator=local_rng).sort()
     latency = 0.1073 + (latency * (upper - 0.1073))
     latency = latency.to("cuda")
     timer = Timer()
