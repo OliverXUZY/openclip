@@ -443,6 +443,7 @@ def main(args):
     )
 
     print("results: ", results)
+    save_json(results, f"eval_results_{num_latency}latency_10SamplePerClass.json")
     
     return
 
