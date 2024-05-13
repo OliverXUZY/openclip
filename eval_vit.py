@@ -439,7 +439,7 @@ def main(args):
         tb_writer=None, 
         ada_scheduler = ada_scheduler,
         text_classifier = classifier,
-        num_latency = 3
+        num_latency = 128
     )
 
     print("results: ", results)

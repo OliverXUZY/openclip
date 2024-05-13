@@ -206,6 +206,12 @@ def eval_vit(
     local_rng = torch.Generator()
     local_rng.manual_seed(42)
     latency, _ = torch.rand(num_latency, generator=local_rng).sort()
+
+    # Create a tensor for the value 1 with the same dtype and device as 'latency'
+    value_to_append = torch.tensor([1], dtype=latency.dtype, device=latency.device)
+    # Append the value to the 'latency' tensor
+    latency = torch.cat((latency, value_to_append))
+
     latency = 0.1073 + (latency * (upper - 0.1073))
     latency = latency.to("cuda")
     timer = Timer()
