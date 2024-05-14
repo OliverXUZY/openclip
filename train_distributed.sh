@@ -1,0 +1,15 @@
+torchrun --nproc_per_node 4 train_vit.py \
+    --save-frequency 5 \
+    --imagenet-train=data/imagenet/train \
+    --imagenet-val=data/imagenet/val \
+    --warmup 10000 \
+    --batch-size=256 \
+    --lr=1e-3 \
+    --wd=0.1 \
+    --epochs=80 \
+    --workers=8 \
+    --model ViT-B-32-quickgelu \
+    --pretrained laion400m_e32 \
+    --report-to wandb \
+    --wandb-project-name openclip_ft \
+    --name dis_100eps

@@ -85,7 +85,7 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
-    set_gpu(args.gpu)
+    # set_gpu(args.gpu)
     # print(args)
     # assert False
 
@@ -551,7 +551,7 @@ def main(args):
         #     evaluate(model, data, completed_epoch, args, tb_writer=writer, tokenizer=tokenizer)
 
         # Saving checkpoints.
-        if args.save_logs and (epoch+1) % 5 == 0:
+        if args.save_logs:
             checkpoint_dict = {
                 "epoch": completed_epoch,
                 "name": args.name,
