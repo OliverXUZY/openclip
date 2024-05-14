@@ -59,6 +59,7 @@ def main(args):
     val_loader = image_val.dataloader
     val_set = val_loader.dataset
     print("len val dataset: ", len(val_set))
+    print("len val dataloader: ", len(val_loader))
 
     eg = val_set[0]
     print(len(eg), type(eg))
@@ -76,6 +77,7 @@ def main(args):
     train_loader = image_train.dataloader
     train_set = train_loader.dataset
     print("len train dataset: ", len(train_set))
+    print("len train dataloader: ", len(train_loader))
 
     eg = train_set[0]
     print(len(eg), type(eg))

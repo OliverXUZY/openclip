@@ -173,7 +173,7 @@ def _build_vision_tower(
             norm_layer=norm_layer,
         )
 
-    print("visual: ", visual)
+    # print("visual: ", visual)
     # assert False, "create vision transformer"
     return visual
 
