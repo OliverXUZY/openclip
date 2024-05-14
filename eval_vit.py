@@ -336,53 +336,12 @@ def main(args):
     )
     assert len(data), 'At least one train or eval dataset must be specified.'
 
-    # create scheduler if train
-    scheduler = None
-    if 'imagenet-train' in data and optimizer is not None:
-        total_steps = (data["imagenet-train"].dataloader.num_batches // args.accum_freq) * args.epochs
-        if args.lr_scheduler == "cosine":
-            scheduler = cosine_lr(optimizer, args.lr, args.warmup, total_steps)
-        elif args.lr_scheduler == "const":
-            scheduler = const_lr(optimizer, args.lr, args.warmup, total_steps)
-        elif args.lr_scheduler == "const-cooldown":
-            assert args.epochs_cooldown is not None,\
-                "Please specify the number of cooldown epochs for this lr schedule."
-            cooldown_steps = (data["train"].dataloader.num_batches // args.accum_freq) * args.epochs_cooldown
-            scheduler = const_lr_cooldown(
-                optimizer, args.lr, args.warmup, total_steps,
-                cooldown_steps, args.lr_cooldown_power, args.lr_cooldown_end)
-        else:
-            logging.error(
-                f'Unknown scheduler, {args.lr_scheduler}. Available options are: cosine, const, const-cooldown.')
-            exit(1)
-
     # determine if this worker should save logs and checkpoints. only do so if it is rank == 0
     args.save_logs = args.logs and args.logs.lower() != 'none' and is_master(args)
     writer = None
     if args.save_logs and args.tensorboard:
         assert tensorboard is not None, "Please install tensorboard."
         writer = tensorboard.SummaryWriter(args.tensorboard_path)
-
-    if args.wandb and is_master(args):
-        assert wandb is not None, 'Please install wandb.'
-        logging.debug('Starting wandb.')
-        args.train_sz = data["imagenet-train"].dataloader.num_samples
-        if args.val_data is not None:
-            args.val_sz = data["imagenet-val"].dataloader.num_samples
-        # you will have to configure this for your project!
-        wandb.init(
-            project=args.wandb_project_name,
-            name=args.name,
-            id=args.name,
-            notes=args.wandb_notes,
-            tags=[],
-            resume='auto' if args.resume == "latest" else None,
-            config=vars(args),
-        )
-        if args.debug:
-            wandb.watch(model, log='all')
-        wandb.save(params_file)
-        logging.debug('Finished loading wandb.')
 
     # Pytorch 2.0 adds '_orig_mod.' prefix to keys of state_dict() of compiled models.
     # For compatibility, we save state_dict() of the original model, which shares the
@@ -430,6 +389,7 @@ def main(args):
 
     
     timer = Timer()
+    num_latency = 3
 
     results = eval_vit(
         model, 
@@ -439,7 +399,7 @@ def main(args):
         tb_writer=None, 
         ada_scheduler = ada_scheduler,
         text_classifier = classifier,
-        num_latency = 128
+        num_latency = num_latency
     )
 
     print("results: ", results)
