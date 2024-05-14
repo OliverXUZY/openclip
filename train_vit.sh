@@ -11,6 +11,6 @@ python train_vit.py \
     --workers=8 \
     --model ViT-B-32-quickgelu \
     --pretrained laion400m_e32 \
-    -g 1 \
-    # --report-to wandb \
-    # --wandb-project-name openclip_ft \
+    -g 0 \
+    --report-to wandb \
+    --wandb-project-name openclip_ft \
