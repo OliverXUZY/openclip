@@ -460,6 +460,7 @@ def parse_args(args):
     )
 
     parser.add_argument('-g', '--gpu', type=str, default='0', help='GPU IDs')
+    parser.add_argument('--num_latency', type=int, default=3, help='number of latency to test')
 
     args = parser.parse_args(args)
 

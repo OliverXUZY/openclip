@@ -387,10 +387,7 @@ def main(args):
 
     print("start evaluate vit in 0-shot manner")
 
-    
-    timer = Timer()
-    num_latency = 3
-
+    num_latency = args.num_latency
     results = eval_vit(
         model, 
         data, 
@@ -406,9 +403,6 @@ def main(args):
     save_json(results, f"eval_results_{num_latency}latency_10SamplePerClass.json")
     
     return
-
-
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])

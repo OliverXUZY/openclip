@@ -268,6 +268,7 @@ def eval_vit(
         result['macs_diff'] = mac_diff
         result['latency'] = laten  # in zero-shot, calculated_macs is a vector with bs, all items are the same values
         result['macs'] = macs
+        results.append(result)
     
     return results
 
