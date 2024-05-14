@@ -334,6 +334,8 @@ def eval_vit_one_latency(
 
                 image_features = model_out['image_features'] if isinstance(model_out, dict) else model_out[0] # [bs, dim] [64, 512]
                 returned_macs = model_out['returned_macs'] if isinstance(model_out, dict) else model_out[-1] # [bs,] [64]
+
+                text_classifier = text_classifier.to(image_features.device)
                 logits = 100. * image_features @ text_classifier
             
             # measure accuracy
