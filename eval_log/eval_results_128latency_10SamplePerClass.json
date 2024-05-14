@@ -1,0 +1,905 @@
+[
+    {
+        "imagenet-zeroshot-val-top1": 0.0356,
+        "imagenet-zeroshot-val-top5": 0.1044,
+        "macs_diff": 0.0223480322599411,
+        "latency": 0.11092609167098999,
+        "macs": 0.13072421588897706
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0344,
+        "imagenet-zeroshot-val-top5": 0.1038,
+        "macs_diff": 0.02223268867135048,
+        "latency": 0.11180435866117477,
+        "macs": 0.13087028670310974
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0324,
+        "imagenet-zeroshot-val-top5": 0.1013,
+        "macs_diff": 0.02208047287464142,
+        "latency": 0.11279942095279694,
+        "macs": 0.13101635761260985
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0359,
+        "imagenet-zeroshot-val-top5": 0.1037,
+        "macs_diff": 0.020339642453193665,
+        "latency": 0.12176413834095001,
+        "macs": 0.13207942900657654
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0364,
+        "imagenet-zeroshot-val-top5": 0.11,
+        "macs_diff": 0.017050925683975218,
+        "latency": 0.13734635710716248,
+        "macs": 0.13439221935272216
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.038,
+        "imagenet-zeroshot-val-top5": 0.111,
+        "macs_diff": 0.010247020426392556,
+        "latency": 0.1608971208333969,
+        "macs": 0.13745970907211302
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0396,
+        "imagenet-zeroshot-val-top5": 0.111,
+        "macs_diff": 0.009704768961668015,
+        "latency": 0.16299909353256226,
+        "macs": 0.1381981786251068
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0425,
+        "imagenet-zeroshot-val-top5": 0.116,
+        "macs_diff": 0.006235448658466339,
+        "latency": 0.1744898557662964,
+        "macs": 0.14331877720355987
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0395,
+        "imagenet-zeroshot-val-top5": 0.1156,
+        "macs_diff": 0.0061250566601753235,
+        "latency": 0.1749681532382965,
+        "macs": 0.143683954000473
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0491,
+        "imagenet-zeroshot-val-top5": 0.1307,
+        "macs_diff": 0.0022942874908447267,
+        "latency": 0.1852879524230957,
+        "macs": 0.1612530351638794
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.057,
+        "imagenet-zeroshot-val-top5": 0.1491,
+        "macs_diff": 0.0004373189926147461,
+        "latency": 0.20131462812423706,
+        "macs": 0.17979591293334962
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.057,
+        "imagenet-zeroshot-val-top5": 0.1467,
+        "macs_diff": 0.00046438047885894774,
+        "latency": 0.2013544738292694,
+        "macs": 0.17930901079177858
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0582,
+        "imagenet-zeroshot-val-top5": 0.1477,
+        "macs_diff": 0.0005998748302459717,
+        "latency": 0.20444193482398987,
+        "macs": 0.181564994430542
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0581,
+        "imagenet-zeroshot-val-top5": 0.1498,
+        "macs_diff": 0.0006530720114707947,
+        "latency": 0.2068503350019455,
+        "macs": 0.18322046446800233
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0593,
+        "imagenet-zeroshot-val-top5": 0.1527,
+        "macs_diff": 0.0008461674302816391,
+        "latency": 0.21128934621810913,
+        "macs": 0.18521676707267762
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0602,
+        "imagenet-zeroshot-val-top5": 0.1545,
+        "macs_diff": 0.0015338080704212188,
+        "latency": 0.2261950671672821,
+        "macs": 0.18985046277046203
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0604,
+        "imagenet-zeroshot-val-top5": 0.156,
+        "macs_diff": 0.001643791428208351,
+        "latency": 0.22965079545974731,
+        "macs": 0.19079180812835694
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0608,
+        "imagenet-zeroshot-val-top5": 0.1554,
+        "macs_diff": 0.0018687794029712678,
+        "latency": 0.2299688756465912,
+        "macs": 0.19142478199005128
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0607,
+        "imagenet-zeroshot-val-top5": 0.1562,
+        "macs_diff": 0.0023955493062734604,
+        "latency": 0.23651225864887238,
+        "macs": 0.19383495326042174
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0624,
+        "imagenet-zeroshot-val-top5": 0.1565,
+        "macs_diff": 0.0031195327207446098,
+        "latency": 0.24727751314640045,
+        "macs": 0.19967778816223145
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0625,
+        "imagenet-zeroshot-val-top5": 0.1556,
+        "macs_diff": 0.003323463486135006,
+        "latency": 0.24875657260417938,
+        "macs": 0.2012845673561096
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.062,
+        "imagenet-zeroshot-val-top5": 0.1567,
+        "macs_diff": 0.003330301946401596,
+        "latency": 0.24899819493293762,
+        "macs": 0.20143875303268433
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0612,
+        "imagenet-zeroshot-val-top5": 0.1561,
+        "macs_diff": 0.003317449299991131,
+        "latency": 0.24936793744564056,
+        "macs": 0.20161728367805481
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.063,
+        "imagenet-zeroshot-val-top5": 0.1553,
+        "macs_diff": 0.0034176236748695373,
+        "latency": 0.2511899769306183,
+        "macs": 0.2032808681964874
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0621,
+        "imagenet-zeroshot-val-top5": 0.1557,
+        "macs_diff": 0.0034304684817790987,
+        "latency": 0.2533952295780182,
+        "macs": 0.2054881603717804
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0639,
+        "imagenet-zeroshot-val-top5": 0.1602,
+        "macs_diff": 0.0030500801742076875,
+        "latency": 0.2604990005493164,
+        "macs": 0.21533170835971832
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0628,
+        "imagenet-zeroshot-val-top5": 0.1591,
+        "macs_diff": 0.0001595403552055359,
+        "latency": 0.26944196224212646,
+        "macs": 0.2294518919467926
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.066,
+        "imagenet-zeroshot-val-top5": 0.1593,
+        "macs_diff": 0.0001453173905611038,
+        "latency": 0.28159743547439575,
+        "macs": 0.24793796887397765
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0652,
+        "imagenet-zeroshot-val-top5": 0.1603,
+        "macs_diff": 0.0001900200664997101,
+        "latency": 0.2852720320224762,
+        "macs": 0.2524255856990814
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0658,
+        "imagenet-zeroshot-val-top5": 0.1599,
+        "macs_diff": 0.0001930857002735138,
+        "latency": 0.2864342927932739,
+        "macs": 0.2538294877052307
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0659,
+        "imagenet-zeroshot-val-top5": 0.1577,
+        "macs_diff": 0.0001710841655731201,
+        "latency": 0.2874316871166229,
+        "macs": 0.25553364968299863
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0672,
+        "imagenet-zeroshot-val-top5": 0.1612,
+        "macs_diff": 0.00016470595002174377,
+        "latency": 0.2874477505683899,
+        "macs": 0.25466533789634704
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0661,
+        "imagenet-zeroshot-val-top5": 0.1585,
+        "macs_diff": 0.00022828520834445952,
+        "latency": 0.28909748792648315,
+        "macs": 0.25673467359542845
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0675,
+        "imagenet-zeroshot-val-top5": 0.1589,
+        "macs_diff": 0.0002704737156629562,
+        "latency": 0.29324859380722046,
+        "macs": 0.26005372977256774
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0665,
+        "imagenet-zeroshot-val-top5": 0.1595,
+        "macs_diff": 0.0003534754604101181,
+        "latency": 0.29803866147994995,
+        "macs": 0.26321048359870913
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0662,
+        "imagenet-zeroshot-val-top5": 0.1591,
+        "macs_diff": 0.000682185873389244,
+        "latency": 0.3078617453575134,
+        "macs": 0.26786040120124816
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0666,
+        "imagenet-zeroshot-val-top5": 0.1599,
+        "macs_diff": 0.001166946455836296,
+        "latency": 0.31535792350769043,
+        "macs": 0.27040853371620177
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.067,
+        "imagenet-zeroshot-val-top5": 0.1605,
+        "macs_diff": 0.0013431958496570586,
+        "latency": 0.32314354181289673,
+        "macs": 0.2723804926395416
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0671,
+        "imagenet-zeroshot-val-top5": 0.1605,
+        "macs_diff": 0.0016212223142385482,
+        "latency": 0.3283995985984802,
+        "macs": 0.2745958996772766
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0669,
+        "imagenet-zeroshot-val-top5": 0.1584,
+        "macs_diff": 0.0015604658126831055,
+        "latency": 0.3363422751426697,
+        "macs": 0.27781756525039675
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0664,
+        "imagenet-zeroshot-val-top5": 0.1612,
+        "macs_diff": 0.0010438724398612975,
+        "latency": 0.34527599811553955,
+        "macs": 0.28369285411834716
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0686,
+        "imagenet-zeroshot-val-top5": 0.1626,
+        "macs_diff": 0.0007042450308799744,
+        "latency": 0.34787803888320923,
+        "macs": 0.2860056440830231
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.066,
+        "imagenet-zeroshot-val-top5": 0.1602,
+        "macs_diff": 0.000677549946308136,
+        "latency": 0.3480002284049988,
+        "macs": 0.28609490871429444
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0674,
+        "imagenet-zeroshot-val-top5": 0.1623,
+        "macs_diff": 0.0001762286424636841,
+        "latency": 0.3585180640220642,
+        "macs": 0.29881930932998657
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0673,
+        "imagenet-zeroshot-val-top5": 0.1618,
+        "macs_diff": 0.00014123374223709107,
+        "latency": 0.3613297939300537,
+        "macs": 0.30338808331489564
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0705,
+        "imagenet-zeroshot-val-top5": 0.1657,
+        "macs_diff": 0.00027409294247627257,
+        "latency": 0.3723612427711487,
+        "macs": 0.3216144895553589
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0696,
+        "imagenet-zeroshot-val-top5": 0.1654,
+        "macs_diff": 0.00031705207228660586,
+        "latency": 0.3732333183288574,
+        "macs": 0.32378121128082277
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0692,
+        "imagenet-zeroshot-val-top5": 0.1638,
+        "macs_diff": 0.00036031560003757474,
+        "latency": 0.381197988986969,
+        "macs": 0.3342658517360687
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0703,
+        "imagenet-zeroshot-val-top5": 0.1643,
+        "macs_diff": 0.00040237896144390106,
+        "latency": 0.38756173849105835,
+        "macs": 0.3395244023799896
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0706,
+        "imagenet-zeroshot-val-top5": 0.1663,
+        "macs_diff": 0.0005114907622337341,
+        "latency": 0.3954116106033325,
+        "macs": 0.34571617221832274
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0704,
+        "imagenet-zeroshot-val-top5": 0.1664,
+        "macs_diff": 0.0006724703103303909,
+        "latency": 0.39993494749069214,
+        "macs": 0.34780985102653506
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0698,
+        "imagenet-zeroshot-val-top5": 0.1656,
+        "macs_diff": 0.0005998654276132584,
+        "latency": 0.4008655548095703,
+        "macs": 0.34814256706237795
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0706,
+        "imagenet-zeroshot-val-top5": 0.1656,
+        "macs_diff": 0.0006366719573736191,
+        "latency": 0.40303701162338257,
+        "macs": 0.34928678889274595
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0703,
+        "imagenet-zeroshot-val-top5": 0.1662,
+        "macs_diff": 0.0006637769669294358,
+        "latency": 0.40507978200912476,
+        "macs": 0.34941663150787355
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0705,
+        "imagenet-zeroshot-val-top5": 0.1663,
+        "macs_diff": 0.0008826253473758698,
+        "latency": 0.4087181091308594,
+        "macs": 0.35160769968032834
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0711,
+        "imagenet-zeroshot-val-top5": 0.1671,
+        "macs_diff": 0.001126267844438553,
+        "latency": 0.4128831624984741,
+        "macs": 0.3536202348232269
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0718,
+        "imagenet-zeroshot-val-top5": 0.1675,
+        "macs_diff": 0.0017244088560342788,
+        "latency": 0.4276120662689209,
+        "macs": 0.3750277132511139
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0714,
+        "imagenet-zeroshot-val-top5": 0.1697,
+        "macs_diff": 0.0007567204833030701,
+        "latency": 0.43260908126831055,
+        "macs": 0.38999998536109926
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0714,
+        "imagenet-zeroshot-val-top5": 0.1703,
+        "macs_diff": 0.0012614465832710266,
+        "latency": 0.4398491382598877,
+        "macs": 0.411301997089386
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.072,
+        "imagenet-zeroshot-val-top5": 0.1722,
+        "macs_diff": 0.0017515946090221404,
+        "latency": 0.4477308392524719,
+        "macs": 0.42548709044456484
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0716,
+        "imagenet-zeroshot-val-top5": 0.1719,
+        "macs_diff": 0.001771945720911026,
+        "latency": 0.44908249378204346,
+        "macs": 0.42603891491889956
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0716,
+        "imagenet-zeroshot-val-top5": 0.1721,
+        "macs_diff": 0.0015584860146045684,
+        "latency": 0.45585310459136963,
+        "macs": 0.4274671604156494
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0714,
+        "imagenet-zeroshot-val-top5": 0.1709,
+        "macs_diff": 0.0017401423275470733,
+        "latency": 0.4606567621231079,
+        "macs": 0.428473423576355
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0717,
+        "imagenet-zeroshot-val-top5": 0.172,
+        "macs_diff": 0.0016894749522209168,
+        "latency": 0.4906293749809265,
+        "macs": 0.4346976683616638
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0712,
+        "imagenet-zeroshot-val-top5": 0.1732,
+        "macs_diff": 0.0016970968306064605,
+        "latency": 0.49473482370376587,
+        "macs": 0.43600418972969057
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0723,
+        "imagenet-zeroshot-val-top5": 0.1711,
+        "macs_diff": 0.0014499005138874053,
+        "latency": 0.5013052821159363,
+        "macs": 0.43820336446762087
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0709,
+        "imagenet-zeroshot-val-top5": 0.1738,
+        "macs_diff": 0.0005231150567531586,
+        "latency": 0.5227198600769043,
+        "macs": 0.4530457808971405
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0738,
+        "imagenet-zeroshot-val-top5": 0.1723,
+        "macs_diff": 0.0008997030377388,
+        "latency": 0.5458853244781494,
+        "macs": 0.4793142018318176
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0726,
+        "imagenet-zeroshot-val-top5": 0.1749,
+        "macs_diff": 0.0010959278643131256,
+        "latency": 0.5548869371414185,
+        "macs": 0.48988811707496643
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0729,
+        "imagenet-zeroshot-val-top5": 0.1745,
+        "macs_diff": 0.001596139568090439,
+        "latency": 0.5641198754310608,
+        "macs": 0.5004295736312866
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0742,
+        "imagenet-zeroshot-val-top5": 0.1759,
+        "macs_diff": 0.005046197664737701,
+        "latency": 0.5817538499832153,
+        "macs": 0.5360952242851257
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.1755,
+        "macs_diff": 0.0035845915377140047,
+        "latency": 0.5957779288291931,
+        "macs": 0.5815881736755371
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.1763,
+        "macs_diff": 0.0051660765051841735,
+        "latency": 0.6024448275566101,
+        "macs": 0.5928518514633179
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.006921035927534103,
+        "latency": 0.6140994429588318,
+        "macs": 0.5997090710639954
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.1767,
+        "macs_diff": 0.0065149435341358185,
+        "latency": 0.6196244955062866,
+        "macs": 0.6005286935806274
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0749,
+        "imagenet-zeroshot-val-top5": 0.176,
+        "macs_diff": 0.005830644482374191,
+        "latency": 0.6232140064239502,
+        "macs": 0.5997090734481811
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.176,
+        "macs_diff": 0.005791912770271301,
+        "latency": 0.6234462261199951,
+        "macs": 0.5999362953186035
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.176,
+        "macs_diff": 0.005607826638221741,
+        "latency": 0.6279311776161194,
+        "macs": 0.6004800035476685
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1765,
+        "macs_diff": 0.005008589500188828,
+        "latency": 0.6335136890411377,
+        "macs": 0.6009019876480103
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1759,
+        "macs_diff": 0.004562586718797684,
+        "latency": 0.6371885538101196,
+        "macs": 0.6006585386276245
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0741,
+        "imagenet-zeroshot-val-top5": 0.1755,
+        "macs_diff": 0.004643106287717819,
+        "latency": 0.6379543542861938,
+        "macs": 0.6011048629760742
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0748,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.003620417410135269,
+        "latency": 0.6437192559242249,
+        "macs": 0.6002852436065674
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1765,
+        "macs_diff": 0.0034585101068019867,
+        "latency": 0.6480117440223694,
+        "macs": 0.6011697820663452
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.0014957032680511474,
+        "latency": 0.6651498675346375,
+        "macs": 0.6018433249473572
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0739,
+        "imagenet-zeroshot-val-top5": 0.1753,
+        "macs_diff": 0.001338411819934845,
+        "latency": 0.6674238443374634,
+        "macs": 0.6039938116073609
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1754,
+        "macs_diff": 0.0013111074090003966,
+        "latency": 0.6735769510269165,
+        "macs": 0.617188847541809
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.0017543251991271973,
+        "latency": 0.682212769985199,
+        "macs": 0.6474742170333863
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0744,
+        "imagenet-zeroshot-val-top5": 0.1758,
+        "macs_diff": 0.0025395305037498473,
+        "latency": 0.6897315979003906,
+        "macs": 0.6674859412193298
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0736,
+        "imagenet-zeroshot-val-top5": 0.1749,
+        "macs_diff": 0.002627747976779938,
+        "latency": 0.6904188990592957,
+        "macs": 0.6677293868064881
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0748,
+        "imagenet-zeroshot-val-top5": 0.1763,
+        "macs_diff": 0.0023948086380958557,
+        "latency": 0.6911970973014832,
+        "macs": 0.6693848616600037
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.175,
+        "macs_diff": 0.0023248731791973114,
+        "latency": 0.6912829279899597,
+        "macs": 0.6689547655105591
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.1752,
+        "macs_diff": 0.002899272882938385,
+        "latency": 0.6948131918907166,
+        "macs": 0.6739049457550049
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.074,
+        "imagenet-zeroshot-val-top5": 0.1753,
+        "macs_diff": 0.0027914634346961975,
+        "latency": 0.7023966312408447,
+        "macs": 0.6779786891937256
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0738,
+        "imagenet-zeroshot-val-top5": 0.1751,
+        "macs_diff": 0.0028050769746303557,
+        "latency": 0.7134771347045898,
+        "macs": 0.6802184402465821
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0744,
+        "imagenet-zeroshot-val-top5": 0.1751,
+        "macs_diff": 0.0024108026802539826,
+        "latency": 0.7344396710395813,
+        "macs": 0.6837079153060913
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0739,
+        "imagenet-zeroshot-val-top5": 0.1751,
+        "macs_diff": 0.0019979482293128966,
+        "latency": 0.7385342121124268,
+        "macs": 0.6838783334732056
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1747,
+        "macs_diff": 0.002257782286405563,
+        "latency": 0.7414997816085815,
+        "macs": 0.6861748951911927
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0744,
+        "imagenet-zeroshot-val-top5": 0.1753,
+        "macs_diff": 0.0029036707401275635,
+        "latency": 0.7688746452331543,
+        "macs": 0.7564593214988709
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0749,
+        "imagenet-zeroshot-val-top5": 0.1748,
+        "macs_diff": 0.002959506034851074,
+        "latency": 0.7803221344947815,
+        "macs": 0.7602328372955323
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.1747,
+        "macs_diff": 0.0028971224665641786,
+        "latency": 0.7904735207557678,
+        "macs": 0.7614014049530029
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1747,
+        "macs_diff": 0.002442881923913956,
+        "latency": 0.8089826703071594,
+        "macs": 0.763170482635498
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0749,
+        "imagenet-zeroshot-val-top5": 0.1749,
+        "macs_diff": 0.0024346176385879516,
+        "latency": 0.8113120794296265,
+        "macs": 0.76366549949646
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0747,
+        "imagenet-zeroshot-val-top5": 0.1744,
+        "macs_diff": 0.0023470092475414276,
+        "latency": 0.8116669058799744,
+        "macs": 0.7634788542747497
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0751,
+        "imagenet-zeroshot-val-top5": 0.1749,
+        "macs_diff": 0.0022734086513519288,
+        "latency": 0.8157836198806763,
+        "macs": 0.7645500354766845
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.075,
+        "imagenet-zeroshot-val-top5": 0.1745,
+        "macs_diff": 0.001955510377883911,
+        "latency": 0.819705605506897,
+        "macs": 0.7645419204711914
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1746,
+        "macs_diff": 0.001722217971086502,
+        "latency": 0.824550449848175,
+        "macs": 0.7660026236534119
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0748,
+        "imagenet-zeroshot-val-top5": 0.1752,
+        "macs_diff": 0.001313574469089508,
+        "latency": 0.8294719457626343,
+        "macs": 0.7672036441802979
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0752,
+        "imagenet-zeroshot-val-top5": 0.1739,
+        "macs_diff": 0.002568575358390808,
+        "latency": 0.8497456312179565,
+        "macs": 0.8227754681587219
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0755,
+        "imagenet-zeroshot-val-top5": 0.1746,
+        "macs_diff": 0.003362902867794037,
+        "latency": 0.8570828437805176,
+        "macs": 0.8363763069152832
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0753,
+        "imagenet-zeroshot-val-top5": 0.1743,
+        "macs_diff": 0.0031881038188934325,
+        "latency": 0.8834173083305359,
+        "macs": 0.8447997117996215
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0752,
+        "imagenet-zeroshot-val-top5": 0.1741,
+        "macs_diff": 0.0028100006818771363,
+        "latency": 0.8949017524719238,
+        "macs": 0.846844709777832
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0753,
+        "imagenet-zeroshot-val-top5": 0.1747,
+        "macs_diff": 0.0025146056056022646,
+        "latency": 0.8977348804473877,
+        "macs": 0.8467635619163513
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.075,
+        "imagenet-zeroshot-val-top5": 0.1744,
+        "macs_diff": 0.0024346674740314484,
+        "latency": 0.8982444405555725,
+        "macs": 0.8467310988426209
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0754,
+        "imagenet-zeroshot-val-top5": 0.1744,
+        "macs_diff": 0.0020607424020767213,
+        "latency": 0.9029672145843506,
+        "macs": 0.8471612014770508
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0751,
+        "imagenet-zeroshot-val-top5": 0.1748,
+        "macs_diff": 0.001861201322078705,
+        "latency": 0.9142844676971436,
+        "macs": 0.8616546926498413
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0751,
+        "imagenet-zeroshot-val-top5": 0.1751,
+        "macs_diff": 0.001465874719619751,
+        "latency": 0.9198975563049316,
+        "macs": 0.8885560955047608
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0748,
+        "imagenet-zeroshot-val-top5": 0.1751,
+        "macs_diff": 0.002002770084142685,
+        "latency": 0.9238490462303162,
+        "macs": 0.9048511158943177
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0755,
+        "imagenet-zeroshot-val-top5": 0.1746,
+        "macs_diff": 0.002154878330230713,
+        "latency": 0.924124002456665,
+        "macs": 0.9063280593872071
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0752,
+        "imagenet-zeroshot-val-top5": 0.1759,
+        "macs_diff": 0.002143259143829346,
+        "latency": 0.9245331287384033,
+        "macs": 0.9062874836921692
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0744,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.0030126298427581785,
+        "latency": 0.9416157007217407,
+        "macs": 0.9227042226791382
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1752,
+        "macs_diff": 0.002982054877281189,
+        "latency": 0.9471266865730286,
+        "macs": 0.9233534238815307
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0743,
+        "imagenet-zeroshot-val-top5": 0.1755,
+        "macs_diff": 0.0030521158933639525,
+        "latency": 0.9521611928939819,
+        "macs": 0.923986399269104
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0745,
+        "imagenet-zeroshot-val-top5": 0.1753,
+        "macs_diff": 0.002648139953613281,
+        "latency": 0.9551162719726562,
+        "macs": 0.9236293352127075
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.175,
+        "macs_diff": 0.002698630428314209,
+        "latency": 0.9567527174949646,
+        "macs": 0.92387278881073
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.175,
+        "macs_diff": 0.002465703397989273,
+        "latency": 0.9623556733131409,
+        "macs": 0.9241487024307251
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1756,
+        "macs_diff": 0.00228865385055542,
+        "latency": 0.9636721611022949,
+        "macs": 0.9239458235740662
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0746,
+        "imagenet-zeroshot-val-top5": 0.1755,
+        "macs_diff": 0.0012468554973602294,
+        "latency": 0.9831506013870239,
+        "macs": 0.9248465953826904
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0748,
+        "imagenet-zeroshot-val-top5": 0.1758,
+        "macs_diff": 1.3093650341033936e-05,
+        "latency": 0.9998254179954529,
+        "macs": 0.9249358587265014
+    },
+    {
+        "imagenet-zeroshot-val-top1": 0.0744,
+        "imagenet-zeroshot-val-top5": 0.1757,
+        "macs_diff": 0.0,
+        "latency": 1.0,
+        "macs": 0.9251793111801148
+    }
+]
