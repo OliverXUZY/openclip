@@ -266,7 +266,7 @@ def eval_vit(
         result['imagenet-zeroshot-val-top1'] = top1
         result['imagenet-zeroshot-val-top5'] = top5
         result['macs_diff'] = mac_diff
-        result['latency'] = laten  # in zero-shot, calculated_macs is a vector with bs, all items are the same values
+        result['latency'] = laten.item()  # in zero-shot, calculated_macs is a vector with bs, all items are the same values
         result['macs'] = macs
         results.append(result)
     
