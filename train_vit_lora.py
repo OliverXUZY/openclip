@@ -384,9 +384,15 @@ def main(args):
         param.requires_grad_(False)
     
     # Set requires_grad to True for all 'para' parameters and initialize them if necessary
-    for name, param in model.named_parameters():
-        if 'visual' in name or "logit_scale" in name:
-            param.requires_grad_(True)
+    # for name, param in model.named_parameters():
+    #     if 'visual' in name or "logit_scale" in name:
+    #         param.requires_grad_(True)
+
+    # for name, param in lycoris_net1.named_parameters():
+    #     if param.requires_grad:
+    #         print(name)
+    
+    # assert False
 
     ### create optimizer and scaler
     optimizer = None
@@ -397,7 +403,7 @@ def main(args):
     exclude = lambda n, p: p.ndim < 2 or "bn" in n or "ln" in n or "bias" in n or 'logit_scale' in n
     include = lambda n, p: not exclude(n, p)
 
-    named_parameters = list(model.named_parameters()) + list(ada_scheduler.named_parameters()) + list(lycoris_net1.named_parameters())
+    named_parameters = list(ada_scheduler.named_parameters()) + list(lycoris_net1.named_parameters())
     gain_or_bias_params = [p for n, p in named_parameters if exclude(n, p) and p.requires_grad]
     rest_params = [p for n, p in named_parameters if include(n, p) and p.requires_grad]
 
@@ -611,7 +617,7 @@ def main(args):
                 torch.save(checkpoint_dict, tmp_save_path)
                 os.replace(tmp_save_path, latest_save_path)
                 
-        
+        '''
         print(f"evaluate on epoch {epoch} === ")
         num_latency = 4
         eval_vit(
@@ -624,6 +630,7 @@ def main(args):
             text_classifier = classifier,
             num_latency = num_latency
         )
+        '''
 
         time_elapsed = timer.end()
 

@@ -191,7 +191,7 @@ def train_one_epoch_vit(
             data_time_m.reset()
     # end for
 
-
+@torch.no_grad()
 def eval_vit(
         model, 
         data, 
@@ -202,6 +202,7 @@ def eval_vit(
         text_classifier = None,
         num_latency = 128,
     ):
+    model.eval()
     upper = 1.0
     local_rng = torch.Generator()
     local_rng.manual_seed(42)

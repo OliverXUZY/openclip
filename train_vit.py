@@ -125,6 +125,7 @@ def main(args):
         log_filename = f'out-{args.rank}' if args.log_local else 'out.log'
         args.log_path = os.path.join(log_base_path, log_filename)
         if os.path.exists(args.log_path) and not resume_latest:
+            print(args.log_path)
             print(
                 "Error. Experiment already exists. Use --name {} to specify a new experiment."
             )
