@@ -2,8 +2,147 @@
 from typing import Callable, Optional, Sequence, Tuple
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
 from .transformer import VisionTransformer, Transformer, ResidualAttentionBlock, QuickGELU, LayerNorm, _expand_token
+
+class PlainMultiHeadAttention(nn.Module):
+    def __init__(
+            self,
+            embed_dim=1024,
+            num_heads=16,
+            dropout=0.,
+            bias=True,
+            kdim=None,
+            vdim=None,
+            batch_first=False):
+        super().__init__()
+
+        self.embed_dim = embed_dim
+        self.kdim = kdim if kdim is not None else embed_dim
+        self.vdim = vdim if vdim is not None else embed_dim
+        self._qkv_same_embed_dim = self.kdim == embed_dim and self.vdim == embed_dim
+
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.batch_first = batch_first
+        self.head_dim = embed_dim // num_heads
+        assert self.head_dim * num_heads == self.embed_dim, "embed_dim must be divisible by num_heads"
+
+        if not self._qkv_same_embed_dim:
+            assert NotImplementedError
+        else:
+            self.qkv = nn.Linear(embed_dim, embed_dim * 3, bias=bias)
+        self.scaled_dot_product_attention = F.scaled_dot_product_attention
+
+        self.proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+
+    def init_weights(self):
+        pass
+
+    def forward(
+            self,
+            query,
+            key,
+            value,
+            key_padding_mask=None,
+            need_weights=True,
+            attn_mask=None,
+            average_attn_weights=True,
+            is_causal=False):
+
+        if attn_mask is not None and is_causal:
+            raise AssertionError("Only allow causal mask or attn_mask")
+        is_batched = query.dim() == 3
+        key_padding_mask = F._canonical_mask(
+            mask=key_padding_mask,
+            mask_name="key_padding_mask",
+            other_type=F._none_or_dtype(attn_mask),
+            other_name="attn_mask",
+            target_type=query.dtype
+        )
+
+        if self.batch_first and is_batched:
+            if key is value:
+                if query is key:
+                    query = key = value = query.transpose(1, 0)
+                else:
+                    query, key = [x.transpose(1, 0) for x in (query, key)]
+                    value = key
+            else:
+                query, key, value = [x.transpose(1, 0) for x in (query, key, value)]
+
+        tgt_len, bsz, embed_dim = query.shape
+        src_len, _, _ = key.shape
+
+        E = query.size(-1)
+        qkv = self.qkv(query)
+        qkv = qkv.unflatten(-1, (3, E)).unsqueeze(0).transpose(0, -2).squeeze(-2).contiguous()
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        attn_mask = F._canonical_mask(
+            mask=attn_mask,
+            mask_name="attn_mask",
+            other_type=F._none_or_dtype(key_padding_mask),
+            other_name="key_padding_mask",
+            target_type=q.dtype,
+            check_other=False,
+        )
+
+        if attn_mask is not None:
+            # ensure attn_mask's dim is 3
+            if attn_mask.dim() == 2:
+                correct_2d_size = (tgt_len, src_len)
+                if attn_mask.shape != correct_2d_size:
+                    raise RuntimeError(
+                        f"The shape of the 2D attn_mask is {attn_mask.shape}, but should be {correct_2d_size}.")
+                attn_mask = attn_mask.unsqueeze(0)
+            elif attn_mask.dim() == 3:
+                correct_3d_size = (bsz * self.num_heads, tgt_len, src_len)
+                if attn_mask.shape != correct_3d_size:
+                    raise RuntimeError(
+                        f"The shape of the 3D attn_mask is {attn_mask.shape}, but should be {correct_3d_size}.")
+            else:
+                raise RuntimeError(f"attn_mask's dimension {attn_mask.dim()} is not supported")
+
+        if attn_mask is not None:
+            if attn_mask.size(0) == 1 and attn_mask.dim() == 3:
+                attn_mask = attn_mask.unsqueeze(0)
+            else:
+                attn_mask = attn_mask.view(bsz, self.num_heads, -1, src_len)
+
+        dropout_p = self.dropout if self.training else 0.
+
+        q = q.view(tgt_len, bsz * self.num_heads, self.head_dim).transpose(0, 1)
+        k = k.view(src_len, bsz * self.num_heads, self.head_dim).transpose(0, 1)
+        v = v.view(src_len, bsz * self.num_heads, self.head_dim).transpose(0, 1)
+        src_len = k.size(1)
+        q = q.view(bsz, self.num_heads, tgt_len, self.head_dim)
+        k = k.view(bsz, self.num_heads, src_len, self.head_dim)
+        v = v.view(bsz, self.num_heads, src_len, self.head_dim)
+
+        attn_output = self.scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+        attn_output = attn_output.permute(2, 0, 1, 3).contiguous().view(bsz * tgt_len, embed_dim)
+        attn_output = self.proj(attn_output)
+        attn_output = attn_output.view(tgt_len, bsz, attn_output.size(1))
+        if self.batch_first and is_batched:
+            return attn_output.transpose(1, 0), None
+        return attn_output, None
+
+    def set_parameters(self, torch_tgt_module):
+        assert isinstance(torch_tgt_module, nn.MultiheadAttention)
+        assert self.embed_dim == torch_tgt_module.embed_dim
+        assert self.batch_first == torch_tgt_module.batch_first
+        assert self.dropout == torch_tgt_module.dropout
+        assert self.head_dim == torch_tgt_module.head_dim
+        assert self.num_heads == torch_tgt_module.num_heads
+        assert self.kdim == torch_tgt_module.kdim
+        assert self.vdim == torch_tgt_module.vdim
+        self.qkv.weight.data = torch_tgt_module.in_proj_weight.data
+        self.qkv.bias.data = torch_tgt_module.in_proj_bias.data
+        self.proj.weight.data = torch_tgt_module.out_proj.weight.data
+        self.proj.bias.data = torch_tgt_module.out_proj.bias.data
+
 
 class ada_ResidualAttentionBlock(ResidualAttentionBlock):
     def __init__(
@@ -26,36 +165,6 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
             is_cross_attention,
         )
         self.attn = nn.MultiheadAttention(d_model, n_head)
-
-    # TODO: not implement mask yet
-    def attention(
-            self,
-            q_x: torch.Tensor,
-            k_x: Optional[torch.Tensor] = None,
-            v_x: Optional[torch.Tensor] = None,
-            attn_mask: Optional[torch.Tensor] = None,
-    ):
-        """
-        Args:
-            q_x (float tensor, (seq_len, bs, dim)): feature maps.  [50 (7*7+1), 4 (or 64), 768]
-            drop_block_mask (bool tensor, (bs,)): mask for residual connection.
-            drop_head_mask (bool tensor, (bs,)): mask for dropping attention head.
-        """
-        
-        # print("q_x: ", q_x.shape)          # [num_patchs (n_tokens), bs, dim] [50, 4(64), 768]
-        # print("k_x: ", k_x)
-        # print("v_x: ", v_x)
-        # assert False
-
-        k_x = k_x if k_x is not None else q_x
-        v_x = v_x if v_x is not None else q_x
-        
-
-
-        attn_mask = attn_mask.to(q_x.dtype) if attn_mask is not None else None
-        return self.attn(
-            q_x, k_x, v_x, need_weights=False, attn_mask=attn_mask
-        )[0]
 
 
     def forward(
@@ -100,7 +209,7 @@ class ada_ResidualAttentionBlock(ResidualAttentionBlock):
                 # Check if drop_block_mask is of boolean type
                 if drop_block_mask.dtype == torch.bool:
                     # Convert to torch.float32
-                    print("convert bool to float, might affect gradient flow in training")
+                    # print("convert bool to float, might affect gradient flow in training")
                     drop_block_mask = drop_block_mask.to(torch.float32)
 
                 mask_reshaped = drop_block_mask.view(1, q_x.shape[1], 1)  # Reshape to (1, bs, 1) for broadcasting

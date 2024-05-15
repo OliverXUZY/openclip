@@ -1,8 +1,8 @@
-# python debug/data_debug.py \
-#     --imagenet-train data/imagenet/train \
-#     --imagenet-val data/imagenet/val \
-#     --model ViT-B-32-quickgelu \
-#     --pretrained laion400m_e32
+python debug/data_debug.py \
+    --imagenet-train data/imagenet/train \
+    --imagenet-val data/imagenet/val \
+    --model ViT-B-32-quickgelu \
+    --pretrained laion400m_e32
 
 # python debug/model_forward.py \
 #     --imagenet-val data/imagenet/val \
@@ -16,8 +16,8 @@
 #     --model ViT-B-32-quickgelu \
 #     --pretrained laion400m_e32
 
-python debug/lora_module.py \
-    --imagenet-train data/imagenet/train \
-    --imagenet-val data/imagenet/val \
-    --model ViT-B-32-quickgelu \
-    --pretrained laion400m_e32
+# python debug/lycoris_module.py \
+#     --imagenet-train data/imagenet/train \
+#     --imagenet-val data/imagenet/val \
+#     --model ViT-B-32-quickgelu \
+#     --pretrained laion400m_e32

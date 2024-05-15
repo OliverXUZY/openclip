@@ -21,6 +21,7 @@ def random_seed(seed=42, rank=0):
     np.random.seed(seed + rank)
     random.seed(seed + rank)
 
+from open_clip.ada_vision_transformer import PlainMultiHeadAttention
 
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
 from open_clip.model import _build_vision_tower
@@ -68,6 +69,15 @@ def main(args):
         **model_kwargs,
     )
 
+    ### replace new nn.multiheadattention with new module
+    for module in model.visual.transformer.resblocks:
+        # print(module.attn)
+        new_module = PlainMultiHeadAttention(embed_dim=module.attn.embed_dim, num_heads=module.attn.num_heads)
+        # print(new_module)
+        # print("==============")
+        new_module.set_parameters(module.attn)
+        module.attn = new_module
+
     print(model.visual)
 
     
@@ -91,12 +101,13 @@ def main(args):
     
     net = model.visual
 
+
     
-    LycorisNetwork.apply_preset({"target_name": [".*attn.*"]})
-    # LycorisNetwork.apply_preset({"target_module": ["ada_VisionTransformer"]})
+    # LycorisNetwork.apply_preset({"target_name": [".*attn.*"]})
+    LycorisNetwork.apply_preset({"target_module": ["ada_VisionTransformer"]})
     # LycorisNetwork.apply_preset({"target_module": ["MultiheadAttention"]})
 
-    lycoris_net1 = create_lycoris(net, 1.0, linear_dim=64, linear_alpha=2.0, algo="lokr")
+    lycoris_net1 = create_lycoris(net, 1.0, linear_dim=64, linear_alpha=2.0, algo="lora")
     lycoris_net1.apply_to()
     lycoris_net1.cuda()
 
@@ -108,7 +119,6 @@ def main(args):
     print("Net1 Params:", num_net1)
     print("net1/total: ", num_net1/num_total)
 
-    print(lycoris_net1.loras)
 
     for name, mod in lycoris_net1.named_modules():
         # print(name)

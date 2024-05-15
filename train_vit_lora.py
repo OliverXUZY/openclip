@@ -27,8 +27,12 @@ try:
     import horovod.torch as hvd
 except ImportError:
     hvd = None
-from open_clip.ada_vision_transformer import PlainMultiHeadAttention
+
+from lycoris import create_lycoris, LycorisNetwork
+
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
+from open_clip.ada_vision_transformer import PlainMultiHeadAttention
+
 from training.data import get_data
 from training.distributed import is_master, init_distributed_device, broadcast_object
 from training.logger import setup_logging
@@ -37,7 +41,16 @@ from training.scheduler import cosine_lr, const_lr, const_lr_cooldown
 from training.train import train_one_epoch, evaluate
 from training.file_utils import pt_load, check_exists, start_sync_process, remote_sync
 
-from src.utils import set_gpu
+from training.ada_train_vit import eval_vit
+
+from open_clip import get_input_dtype, get_tokenizer, build_zero_shot_classifier, \
+    IMAGENET_CLASSNAMES, OPENAI_IMAGENET_TEMPLATES
+from training.precision import get_autocast
+from training.ada_train_vit import train_one_epoch_vit
+from open_clip.ada_scheduler import ada_Scheduler, ada_SchedulerCfg
+from open_clip.loss import AdaLoss
+
+from src.utils import set_gpu, Timer, time_str
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
 
@@ -45,26 +58,9 @@ import json
 def save_json(data, file_path, indent = 4):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent = indent)
-    
-class Timer(object):
 
-    def __init__(self):
+torch.autograd.set_detect_anomaly(True)
 
-        self.start()
-
-    def start(self):
-        self.v = time.time()
-
-    def end(self):
-        return time.time() - self.v
-
-
-def time_str(t):
-    if t >= 3600:
-        return '{:.1f}h'.format(t / 3600)
-    if t > 60:
-        return '{:.1f}m'.format(t / 60)
-    return '{:.1f}s'.format(t)
 
 def random_seed(seed=42, rank=0):
     torch.manual_seed(seed + rank)
@@ -95,7 +91,7 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
-    set_gpu(args.gpu)
+    # set_gpu(args.gpu)
     # print(args)
     # assert False
 
@@ -135,6 +131,7 @@ def main(args):
         log_filename = f'out-{args.rank}' if args.log_local else 'out.log'
         args.log_path = os.path.join(log_base_path, log_filename)
         if os.path.exists(args.log_path) and not resume_latest:
+            print(args.log_path)
             print(
                 "Error. Experiment already exists. Use --name {} to specify a new experiment."
             )
@@ -289,17 +286,34 @@ def main(args):
         **model_kwargs,
     )
 
-    # print(model.visual)
     ### replace new nn.multiheadattention with new module
     for module in model.visual.transformer.resblocks:
-        # print(module.attn)
         new_module = PlainMultiHeadAttention(embed_dim=module.attn.embed_dim, num_heads=module.attn.num_heads)
-        # print(new_module)
-        # print("==============")
         new_module.set_parameters(module.attn)
         module.attn = new_module
-    # print(model.visual)
-    # assert False
+    
+    ### set up lora network
+    net = model.visual
+    LycorisNetwork.apply_preset({"target_module": ["ada_VisionTransformer"]})
+
+    lycoris_net1 = create_lycoris(net, 1.0, linear_dim=64, linear_alpha=2.0, algo="lora")
+    lycoris_net1.apply_to()
+    lycoris_net1.cuda()
+
+    print(f"#Modules of net1: {len(lycoris_net1.loras)}")
+
+    num_total = sum(p.numel() for p in net.parameters())
+    num_net1 = sum(p.numel() for p in lycoris_net1.parameters())
+    print("Total params:", num_total)
+    print("Net1 Params:", num_net1)
+    print("net1/total: ", num_net1/num_total)
+
+    ### set up scheduler
+    ada_schdeuler_cfg = ada_SchedulerCfg()
+    ada_scheduler = ada_Scheduler(ada_schdeuler_cfg)
+    ada_scheduler.to("cuda")
+    # print(scheduler)
+
 
     if args.distill:
         # FIXME: currently assumes the model you're distilling from has the same tokenizer & transforms.
@@ -363,37 +377,63 @@ def main(args):
         if args.distill:
             dist_model = torch.nn.parallel.DistributedDataParallel(dist_model, device_ids=[device], **ddp_args)
 
-    # create optimizer and scaler
+    #------------------------------------------
+    ### set up model gradient
+    # Freeze all the parameters in the model
+    for param in model.parameters():
+        param.requires_grad_(False)
+    
+    # Set requires_grad to True for all 'para' parameters and initialize them if necessary
+    for name, param in model.named_parameters():
+        if 'visual' in name or "logit_scale" in name:
+            param.requires_grad_(True)
+
+    ### create optimizer and scaler
     optimizer = None
     scaler = None
 
-    if args.train_data or args.dataset_type == "synthetic":
-        assert not args.trace, 'Cannot train with traced model'
+    assert not args.trace, 'Cannot train with traced model'
 
-        exclude = lambda n, p: p.ndim < 2 or "bn" in n or "ln" in n or "bias" in n or 'logit_scale' in n
-        include = lambda n, p: not exclude(n, p)
+    exclude = lambda n, p: p.ndim < 2 or "bn" in n or "ln" in n or "bias" in n or 'logit_scale' in n
+    include = lambda n, p: not exclude(n, p)
 
-        named_parameters = list(model.named_parameters())
-        gain_or_bias_params = [p for n, p in named_parameters if exclude(n, p) and p.requires_grad]
-        rest_params = [p for n, p in named_parameters if include(n, p) and p.requires_grad]
+    named_parameters = list(model.named_parameters()) + list(ada_scheduler.named_parameters()) + list(lycoris_net1.named_parameters())
+    gain_or_bias_params = [p for n, p in named_parameters if exclude(n, p) and p.requires_grad]
+    rest_params = [p for n, p in named_parameters if include(n, p) and p.requires_grad]
 
-        optimizer = optim.AdamW(
-            [
-                {"params": gain_or_bias_params, "weight_decay": 0.},
-                {"params": rest_params, "weight_decay": args.wd},
-            ],
-            lr=args.lr,
-            betas=(args.beta1, args.beta2),
-            eps=args.eps,
-        )
-        if args.horovod:
-            optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
-            hvd.broadcast_parameters(model.state_dict(), root_rank=0)
-            hvd.broadcast_optimizer_state(optimizer, root_rank=0)
+    ######################## test param in optim ########################
+    
+    # print(" ================ gain_or_bias_params ==================== ")
+    # for n, p in named_parameters:
+    #     if exclude(n, p) and p.requires_grad:
+    #         print(n)
+    # print(" ================ rest_params ==================== ")
+    # for n, p in named_parameters:
+    #     if include(n, p) and p.requires_grad:
+    #         print(n)
+    # assert False
 
-        scaler = GradScaler() if args.precision == "amp" else None
+    ######################## test param in optim ########################
 
-    # optionally resume from a checkpoint
+
+    optimizer = optim.AdamW(
+        [
+            {"params": gain_or_bias_params, "weight_decay": 0.},
+            {"params": rest_params, "weight_decay": args.wd},
+        ],
+        lr=args.lr,
+        betas=(args.beta1, args.beta2),
+        eps=args.eps,
+    )
+    if args.horovod:
+        optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
+        hvd.broadcast_parameters(model.state_dict(), root_rank=0)
+        hvd.broadcast_optimizer_state(optimizer, root_rank=0)
+
+    scaler = GradScaler() if args.precision == "amp" else None
+
+    #------------------------------------------
+    ### optionally resume from a checkpoint
     start_epoch = 0
     if args.resume is not None:
         checkpoint = pt_load(args.resume, map_location='cpu')
@@ -414,7 +454,8 @@ def main(args):
             model.load_state_dict(checkpoint)
             logging.info(f"=> loaded checkpoint '{args.resume}' (epoch {start_epoch})")
 
-    # initialize datasets
+    #------------------------------------------
+    ### initialize datasets
     tokenizer = get_tokenizer(args.model)
     data = get_data(
         args,
@@ -426,8 +467,8 @@ def main(args):
 
     # create scheduler if train
     scheduler = None
-    if 'train' in data and optimizer is not None:
-        total_steps = (data["train"].dataloader.num_batches // args.accum_freq) * args.epochs
+    if 'imagenet-train' in data and optimizer is not None:
+        total_steps = (data["imagenet-train"].dataloader.num_batches // args.accum_freq) * args.epochs
         if args.lr_scheduler == "cosine":
             scheduler = cosine_lr(optimizer, args.lr, args.warmup, total_steps)
         elif args.lr_scheduler == "const":
@@ -454,9 +495,9 @@ def main(args):
     if args.wandb and is_master(args):
         assert wandb is not None, 'Please install wandb.'
         logging.debug('Starting wandb.')
-        args.train_sz = data["train"].dataloader.num_samples
+        args.train_sz = data["imagenet-train"].dataloader.num_samples
         if args.val_data is not None:
-            args.val_sz = data["val"].dataloader.num_samples
+            args.val_sz = data["imagenet-val"].dataloader.num_samples
         # you will have to configure this for your project!
         wandb.init(
             project=args.wandb_project_name,
@@ -487,59 +528,180 @@ def main(args):
         print("convet")
         from open_clip.utils import convert_int8_model_to_inference_mode
         convert_int8_model_to_inference_mode(model)
-
-
+    
     ##################################### above copied from main
-    print("start evaluate")
+    
+    
+
+    print("start training vit in 0-shot manner")
+
+    
     timer = Timer()
 
-    # drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True, False]).to("cuda")
-    drop_block_masks = torch.tensor([True, False, True, True, True, False, True, True, True, False, True]).to("cuda")
+    loss = AdaLoss()
 
-    # Number of elements in each tensor
-    n_elements = 12 - 1   # hardcode for now
+    epoch = 0
 
-    # Total combinations for n_elements boolean values (2^12)
-    total_combinations = 2 ** n_elements
-
-    # Generate all combinations
-    all_tensors = torch.zeros((total_combinations, n_elements), dtype=torch.bool)
-
-    # Populate the tensor with combinations
-    for i in range(total_combinations):
-        all_tensors[i] = torch.tensor([int(x) for x in f"{i:011b}"], dtype=torch.bool)
-
-    # Move the tensor to the CUDA device
-    all_tensors = all_tensors.cuda()
-
-    # print("All tensors:")
-    # print(all_tensors.shape)
-    # for i in all_tensors[:20]:
-    #     print(i.detach().cpu().numpy())
-
-    # Evaluate.
-    branch_subset = 128
-    # Step 1: Randomly sample 128 unique indices from 0 to 4095
-    indices = torch.randperm(all_tensors.size(0))[:branch_subset].to(device='cuda:0')
-    # Step 2: Iterate over each selected index and evaluate
-    results = []
-    for count, idx in enumerate(indices):
-        drop_block_masks = all_tensors[idx]
-
-        # drop_block_masks = torch.tensor([True, True, True, True, True, True, True, True, True, True, True]).to("cuda")
-        # print(drop_block_masks)
-        # Run the evaluation function
-        result = evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer, drop_block_masks=drop_block_masks)
+    ### build text classifier
+    autocast = get_autocast(args.precision)
+    # Path to the saved tensor file
+    file_path = 'imagenet_val_classifier_tensor.pt'
+    if os.path.exists(file_path):
+        print(f"Load the tensor if the file exists in {file_path}")
+        classifier = torch.load(file_path)
+    else:
+        with autocast():
+            classifier = build_zero_shot_classifier(
+                model,
+                tokenizer=tokenizer,
+                classnames=IMAGENET_CLASSNAMES,
+                templates=OPENAI_IMAGENET_TEMPLATES,
+                num_classes_per_batch=10,
+                device=args.device,
+                use_tqdm=True,
+            ) # tensor [embd_dim, num_class] [512, 1000]
         
-        results.append(result)
+        # Save the new classifier tensor to the file
+        print(f"Save the new classifier tensor to the file in {file_path}")
+        torch.save(classifier, file_path)
+
+    # train_one_epoch_vit(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, ada_scheduler = ada_scheduler, text_classifier = classifier)
+
+    ### saving, copied from main.py
+    for epoch in range(start_epoch, args.epochs):
+        if is_master(args):
+            logging.info(f'Start epoch {epoch}')
+
+        train_one_epoch_vit(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, ada_scheduler = ada_scheduler, text_classifier = classifier)
+        completed_epoch = epoch + 1
+
+        ##
+        # if any(v in data for v in ('val', 'imagenet-val', 'imagenet-v2')):
+        #     evaluate(model, data, completed_epoch, args, tb_writer=writer, tokenizer=tokenizer)
+
+        # Saving checkpoints.
+        if args.save_logs:
+            checkpoint_dict = {
+                "epoch": completed_epoch,
+                "name": args.name,
+                "state_dict": original_model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "ada_scheduler": ada_scheduler.state_dict(),
+                "lora_net": lycoris_net1.state_dict(),
+            }
+            if scaler is not None:
+                checkpoint_dict["scaler"] = scaler.state_dict()
+
+            if completed_epoch == args.epochs or (
+                args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
+            ):
+                torch.save(
+                    checkpoint_dict,
+                    os.path.join(args.checkpoint_path, f"epoch_{completed_epoch}.pt"),
+                )
+            if args.delete_previous_checkpoint:
+                previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
+                if os.path.exists(previous_checkpoint):
+                    os.remove(previous_checkpoint)
+
+            if args.save_most_recent:
+                # try not to corrupt the latest checkpoint if save fails
+                tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
+                latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
+                torch.save(checkpoint_dict, tmp_save_path)
+                os.replace(tmp_save_path, latest_save_path)
+                
+        
+        print(f"evaluate on epoch {epoch} === ")
+        num_latency = 4
+        eval_vit(
+            model, 
+            data, 
+            dist_model, 
+            args, 
+            tb_writer=None, 
+            ada_scheduler = ada_scheduler,
+            text_classifier = classifier,
+            num_latency = num_latency
+        )
+
         time_elapsed = timer.end()
-        print(f"{count}-th branch, time elapsed {time_str(time_elapsed)} | {time_str(time_elapsed/(count+1)*branch_subset)}")
-        
+
+        print(f"epoch {epoch+1} | {args.epochs}, time elapsed: {time_str(time_elapsed)} | {time_str(time_elapsed/(epoch+1)*args.epochs)}")
+
+    if args.wandb and is_master(args):
+        wandb.finish()
     
-    print(results)
-    save_json(results, f"baseline_results_{branch_subset}branch_10SamplePerClass.json")
+    if args.save_logs:
+        checkpoint_dict = {
+            "epoch": completed_epoch,
+            "name": args.name,
+            "state_dict": original_model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "ada_scheduler": ada_scheduler.state_dict(),
+            "lora_net": lycoris_net1.state_dict(),
+        }
+        if scaler is not None:
+            checkpoint_dict["scaler"] = scaler.state_dict()
+
+        if completed_epoch == args.epochs or (
+            args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
+        ):
+            torch.save(
+                checkpoint_dict,
+                os.path.join(args.checkpoint_path, f"epoch_last.pt"),
+            )
+        if args.delete_previous_checkpoint:
+            previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
+            if os.path.exists(previous_checkpoint):
+                os.remove(previous_checkpoint)
+
+        if args.save_most_recent:
+            # try not to corrupt the latest checkpoint if save fails
+            tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
+            latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
+            torch.save(checkpoint_dict, tmp_save_path)
+            os.replace(tmp_save_path, latest_save_path)
+    
+    ### final save merged weights, not necessary
+    lycoris_net1.merge_to(1.0)
+    checkpoint_dict = {
+        "epoch": completed_epoch,
+        "name": args.name,
+        "state_dict": original_model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "ada_scheduler": ada_scheduler.state_dict(),
+        "lora_net": lycoris_net1.state_dict(),
+    }
+    if scaler is not None:
+        checkpoint_dict["scaler"] = scaler.state_dict()
+
+    if completed_epoch == args.epochs or (
+        args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
+    ):
+        torch.save(
+            checkpoint_dict,
+            os.path.join(args.checkpoint_path, f"epoch_last_merge_lora.pt"),
+        )
+
+    # run a final sync.
+    if remote_sync_process is not None:
+        logging.info('Final remote sync.')
+        remote_sync_process.terminate()
+        result = remote_sync(
+            os.path.join(args.logs, args.name), 
+            os.path.join(args.remote_sync, args.name), 
+            args.remote_sync_protocol
+        )
+        if result:
+            logging.info('Final remote sync successful.')
+        else:
+            logging.info('Final remote sync failed.')
+
 
     return
+
+
 
 
 if __name__ == "__main__":

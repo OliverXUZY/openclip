@@ -31,7 +31,7 @@ def main(args):
 
 
     # define branch masks
-    n_knobs = model_cfg['vision_cfg']['layers']
+    n_knobs = model_cfg['vision_cfg']['layers'] - 1
     print('Number of knobs: {:d}'.format(n_knobs))
     print('Building masks...')
     masks = np.concatenate(
