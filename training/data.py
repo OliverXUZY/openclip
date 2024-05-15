@@ -142,7 +142,7 @@ def get_imagenet(args, preprocess_fns, split, val_subset = True):
     if is_train:
         idxs = np.zeros(len(dataset.targets))
         target_array = np.array(dataset.targets)
-        k = 50
+        k = 500
         for c in range(1000):
             m = target_array == c
             n = len(idxs[m])

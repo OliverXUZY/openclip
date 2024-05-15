@@ -12,6 +12,6 @@ python train_vit_lora.py \
     --model ViT-B-32-quickgelu \
     --pretrained laion400m_e32 \
     -g 0 \
-    # --report-to wandb \
-    # --wandb-project-name openclip_ft \
-    # --name eps3_1gpu_lora
+    --report-to wandb \
+    --wandb-project-name openclip_ft \
+    --name eps30_1gpu_lora

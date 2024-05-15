@@ -617,7 +617,7 @@ def main(args):
                 torch.save(checkpoint_dict, tmp_save_path)
                 os.replace(tmp_save_path, latest_save_path)
                 
-        '''
+        
         print(f"evaluate on epoch {epoch} === ")
         num_latency = 4
         eval_vit(
@@ -630,7 +630,7 @@ def main(args):
             text_classifier = classifier,
             num_latency = num_latency
         )
-        '''
+        
 
         time_elapsed = timer.end()
 
