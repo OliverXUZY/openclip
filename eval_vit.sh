@@ -4,4 +4,4 @@ python eval_vit.py \
     --pretrained laion400m_e32 \
     -g 0 \
     --resume ./logs/eps3_1gpu_lora/checkpoints/epoch_last.pt \
-    --num_latency 3 \
+    --num_latency 128 \
