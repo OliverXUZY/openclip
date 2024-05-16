@@ -1,8 +1,8 @@
-python debug/data_debug.py \
-    --imagenet-train data/imagenet/train \
-    --imagenet-val data/imagenet/val \
-    --model ViT-B-32-quickgelu \
-    --pretrained laion400m_e32
+# python debug/data_debug.py \
+#     --imagenet-train data/imagenet/train \
+#     --imagenet-val data/imagenet/val \
+#     --model ViT-B-32-quickgelu \
+#     --pretrained laion400m_e32
 
 # python debug/model_forward.py \
 #     --imagenet-val data/imagenet/val \
@@ -21,3 +21,10 @@ python debug/data_debug.py \
 #     --imagenet-val data/imagenet/val \
 #     --model ViT-B-32-quickgelu \
 #     --pretrained laion400m_e32
+
+
+python debug/lycoris_load.py \
+    --imagenet-train data/imagenet/train \
+    --imagenet-val data/imagenet/val \
+    --model ViT-B-32-quickgelu \
+    --pretrained laion400m_e32 

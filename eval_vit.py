@@ -29,6 +29,8 @@ except ImportError:
     hvd = None
 
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
+from open_clip.ada_vision_transformer import PlainMultiHeadAttention
+
 from training.data import get_data
 from training.distributed import is_master, init_distributed_device, broadcast_object
 from training.logger import setup_logging
@@ -45,6 +47,9 @@ from open_clip.ada_scheduler import ada_Scheduler, ada_SchedulerCfg
 from open_clip.loss import AdaLoss
 
 from src.utils import set_gpu
+
+from lycoris import create_lycoris, LycorisNetwork
+
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
 
@@ -308,6 +313,15 @@ def main(args):
     if args.resume is not None:
         print(f"load from path {args.resume}")
         checkpoint = pt_load(args.resume, map_location='cpu')
+
+        if checkpoint.get("lora_net"):
+            print("load lora checkpoint, replace nn.multiheadattention with plain reconstruction")
+            ### replace new nn.multiheadattention with new module
+            for module in model.visual.transformer.resblocks:
+                new_module = PlainMultiHeadAttention(embed_dim=module.attn.embed_dim, num_heads=module.attn.num_heads)
+                new_module.set_parameters(module.attn)
+                module.attn = new_module
+
         print("checkpoint", type(checkpoint), checkpoint.keys())
         if 'epoch' in checkpoint:
             # resuming a train checkpoint w/ epoch and optimizer state
@@ -319,6 +333,22 @@ def main(args):
             model.load_state_dict(sd)
             ada_scheduler.load_state_dict(scheduler_sd)
             logging.info(f"=> resuming checkpoint '{args.resume}' (epoch {start_epoch})")
+            if checkpoint.get("lora_net"):
+                lora_sd = checkpoint['lora_net']
+                print("load lora checkpoint, construct lycoris")
+                net = model.visual
+                LycorisNetwork.apply_preset({"target_module": ["ada_VisionTransformer"]})
+                lycoris_net1 = create_lycoris(net, 1.0, linear_dim=64, linear_alpha=2.0, algo="lora")
+                lycoris_net1.apply_to()
+                lycoris_net1.cuda()
+                print(f"#Modules of net1: {len(lycoris_net1.loras)}")
+                num_total = sum(p.numel() for p in net.parameters())
+                num_net1 = sum(p.numel() for p in lycoris_net1.parameters())
+                print("Total params:", num_total)
+                print("Net1 Params:", num_net1)
+                print("net1/total: ", num_net1/num_total)
+                lycoris_net1.load_state_dict(lora_sd)
+
         else:
             print("zhuoyan, loading a bare model")
             # loading a bare (model only) checkpoint for fine-tune or evaluation
@@ -400,7 +430,13 @@ def main(args):
     )
 
     print("results: ", results)
-    save_json(results, f"eval_results_{num_latency}latency_10SamplePerClass.json")
+
+    eval_file = f"eval_results_{num_latency}latency"
+
+    if checkpoint.get("lora_net"):
+        eval_file += "_lora"
+
+    save_json(results, f"{eval_file}.json")
     
     return
 

@@ -85,25 +85,47 @@ def main(args):
     print("args.precision", args.precision)
     autocast = get_autocast(args.precision)
 
-    with autocast():
-        # predict
-        output = model(image=images)
-    
-    image_features = output['image_features'] if isinstance(output, dict) else output[0] # [bs, dim] [64, 512]
-    
-    print("in debug/model_forward: ", image_features.shape)
+    ##### load from trained ckpt
 
-    for name, mod in model.visual.named_modules():
-        # print(name)
-        # print(mod)
-        # print("=================")
-        pass
+    '''
+    args.resume = "./logs/eps3_1gpu_lora/checkpoints/epoch_last_merge_lora.pt"
+    print(f"load from path {args.resume}")
+    checkpoint = pt_load(args.resume, map_location='cpu')
+    print("checkpoint", type(checkpoint), checkpoint.keys())
+    
+    sd = checkpoint["state_dict"]
+    scheduler_sd = checkpoint['ada_scheduler']
+    lora_sd = checkpoint["lora_net"]
+
+    model.load_state_dict(sd)
+
+    print(model.state_dict()['visual.transformer.resblocks.6.attn.qkv.weight'][0][0:10])
+
+    output = model(image=images)
+    print(output['image_features'].shape)
+    print("output: ", output['image_features'][0][:15])
+
+    return
+
+    '''
+
 
     
+
+
+    args.resume = "./logs/eps3_1gpu_lora/checkpoints/epoch_last.pt"
+    print(f"load from path {args.resume}")
+    checkpoint = pt_load(args.resume, map_location='cpu')
+    print("checkpoint", type(checkpoint), checkpoint.keys())
+    
+    sd = checkpoint["state_dict"]
+    scheduler_sd = checkpoint['ada_scheduler']
+    lora_sd = checkpoint["lora_net"]
+
+    model.load_state_dict(sd)
+
+
     net = model.visual
-
-
-    
     # LycorisNetwork.apply_preset({"target_name": [".*attn.*"]})
     LycorisNetwork.apply_preset({"target_module": ["ada_VisionTransformer"]})
     # LycorisNetwork.apply_preset({"target_module": ["MultiheadAttention"]})
@@ -121,15 +143,12 @@ def main(args):
     print("net1/total: ", num_net1/num_total)
 
 
-    for name, mod in lycoris_net1.named_modules():
-        # print(name)
-        # print(mod)
-        # print("=================")
-        pass
-
-    
+    lycoris_net1.load_state_dict(lora_sd)
 
 
+    output = model(image=images)
+    print(output['image_features'].shape)
+    print("output: ", output['image_features'][0][:15])
 
 if __name__ == "__main__":
     args = sys.argv[1:]
