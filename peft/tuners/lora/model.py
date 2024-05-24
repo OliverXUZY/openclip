@@ -229,6 +229,8 @@ class LoraModel(BaseTuner):
         setattr(parent, child_name, new_module)
         # It's not necessary to set requires_grad here, as that is handled by
         # _mark_only_adapters_as_trainable
+        # print(new_module)
+        # print(child)
 
         # child layer wraps the original module, unpack it
         if hasattr(child, "base_layer"):
@@ -311,6 +313,8 @@ class LoraModel(BaseTuner):
         new_module = None
         for dispatcher in dispatchers:
             new_module = dispatcher(target, adapter_name, lora_config=lora_config, **kwargs)
+            # print(dispatcher)
+            # print(new_module)
             if new_module is not None:  # first match wins
                 break
 

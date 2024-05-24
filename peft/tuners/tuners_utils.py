@@ -34,7 +34,7 @@ from peft.utils import INCLUDE_LINEAR_LAYERS_SHORTHAND
 from ..config import PeftConfig
 from ..utils import ModulesToSaveWrapper, _get_submodules
 
-
+from pprint import pprint
 logger = logging.getLogger(__name__)
 
 
@@ -160,8 +160,14 @@ class BaseTuner(nn.Module, ABC):
             else:
                 # user is adding a dict of PeftConfigs
                 self.peft_config.update(peft_config)
+        print("self.peft_config: ", )
+        pprint(self.peft_config)
+        # assert False
 
         self.active_adapter: str | list[str] = adapter_name
+
+        # print("self.active_adapter: ", self.active_adapter)
+
         self._pre_injection_hook(self.model, self.peft_config[adapter_name], adapter_name)
         self.inject_adapter(self.model, adapter_name)
 
@@ -342,6 +348,7 @@ class BaseTuner(nn.Module, ABC):
         self._prepare_model(peft_config, model)
         is_target_modules_in_base_model = False
         key_list = [key for key, _ in model.named_modules()]
+        # print(key_list)
 
         # update peft_config.target_modules if required
         peft_config = _maybe_include_all_linear_layers(peft_config, model)
@@ -369,7 +376,13 @@ class BaseTuner(nn.Module, ABC):
             self.targeted_module_names.append(key)
             is_target_modules_in_base_model = True
             parent, target, target_name = _get_submodules(model, key)
+            # print("key: ", key)
+            # print(parent, "===", target, "===",target_name)
+            # print("==================++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            
+
             self._create_and_replace(peft_config, adapter_name, target, target_name, parent, current_key=key)
+            # assert False
 
         if not is_target_modules_in_base_model:
             raise ValueError(
